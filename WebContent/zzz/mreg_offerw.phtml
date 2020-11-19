@@ -1,0 +1,105 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//
+//mreg_hunt.phtml (구직회원가입DB에저장)
+//
+
+include("./inc_initarray.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//근무희망업종 및 희망지역 문자열 만들기 #1#2#3#----------------------------------------------------
+
+if(count($work_class) > 5)Err_Msg("구인업종은 5개까지 선택가능합니다.");
+if(count($work_class) < 1)Err_Msg("구인업종은 하나이상 선택해야 합니다.");
+
+if(count($work_area) > 4)Err_Msg("근무지역은 5개까지 선택가능합니다.");
+if(count($work_area) < 1)Err_Msg("근무지역은 하나이상 선택해야 합니다.");
+
+for($i=0;$i<count($work_class);$i++){
+													$class_str=$class_str."#".$work_class[$i];
+													}
+													$work_class=$class_str."#";
+														
+for($i=0;$i<count($work_area);$i++){
+													$area_str=$area_str."#".$work_area[$i];
+													}
+													$work_area=$area_str."#";
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass);
+
+//수정모드이면수정작업 아니면 저장작업
+$QUE=($edit_mode) ? "
+UPDATE $table_mem[offer] 
+SET password='$password',
+company='$company', 
+work_area='$work_area', 
+work_class='$work_class', 
+captain_name='$captain_name',
+captain_tel='$captain_tel',
+fax='$fax', 
+email	='$email	', 
+homepage='$homepage', 
+juso_num='$juso_num',
+juso='$juso', 
+establish_year='$establish_year', 
+merit_yes_no='$merit_yes_no',
+scale	='$scale', 
+member='$member', 
+funds	='$funds', 
+business_title='$business_title',
+content='$content', 
+paper='$paper' 
+WHERE id = '$USER_COOKIE_OFFER'
+"
+:"
+INSERT INTO $table_mem[offer] 
+VALUES(
+'$id',
+'$password',
+'$company',
+'$work_area',
+'$work_class',
+'$captain_name',
+'$captain_tel',
+'$fax',
+'$email',
+'$homepage',
+'$juso_num',
+'$juso',
+'$establish_year',
+'$merit_yes_no',
+'$scale',
+'$member',
+'$funds',
+'$business_title',
+'$content',
+'$paper','','')";
+
+//echo $QUE; exit;
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+echo "<META http-equiv='refresh' content='0;url=$sfile[index]'>";
+?>

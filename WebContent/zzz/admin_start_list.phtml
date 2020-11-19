@@ -1,0 +1,186 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_start_list.phtml     (시작글관리모드)
+include("inc_initarray.phtml"); 
+include("html_style.phtml");
+
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+echo("
+<HTML>
+<HEAD>
+<TITLE>시작목록관리도구</TITLE>
+<SCRIPT language='JavaScript'>
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_offer]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+
+function window_level_hunt(str){ //레벨조정
+url= '$sfile[admin_level_view_hunt]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+//-->
+</script>
+<HEAD>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=750 bgcolor=black>
+<tr>
+<td bgcolor=whitesmoke width='750' height='20'><p align='left'>
+<font color=$SETOUTLINE_COLOR_CHAR>
+<a href=$sfile[admin_main]>관리자메뉴</a> | <a href=$sfile[index]>시작화면</a>
+</font></td>
+</tr>
+</table>
+</div>
+<br><br>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=750 bgcolor=black>
+<tr>
+<td bgcolor=whitesmoke width='520' height='20'><p align='left'><font color=$SETOUTLINE_COLOR_CHAR>구인시작화면출력목록</font></td>
+<td bgcolor=whitesmoke width='30' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>상태</font></td>
+<td bgcolor=whitesmoke width='30' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>레벨</font></td>
+<td bgcolor=whitesmoke width='80' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>마감일</font></td>
+<td bgcolor=whitesmoke width='80' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>회원아이디</font></td>
+</tr>
+");
+
+//구인 level DB읽어오기(먼저 구인(whatmode=0)튜플만불로온다.) whatmode=0 <-구인  1<-구직
+//==========================================================================
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+//==========================================================================
+$QUE="
+		SELECT tcode, seq, finishday, level FROM $table_jelse[level] WHERE whatmode=0 ORDER BY weight
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);	
+
+//구인리스트DB읽어오기
+//==========================================================================
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+//==========================================================================
+for($i=0;$i<$total;$i++){	 
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+	$tcode=$da[tcode];		//해당 level 튜플의 tcode명추출
+	$seq=$da[seq];			//해당 level 튜플의 seq명추출
+	
+$QUE="SELECT id_fk_offermem, title, finishday, finishday_no FROM $table_offer[$tcode] WHERE seq=$seq";	
+$RESULTOFFER=mysql_query($QUE) or die(mysql_error($table_connect));
+$dalist = mysql_fetch_array($RESULTOFFER);				//결과를 한줄씩 배열로 넣는다.
+
+$current_date=(int)date( "Ymd", time() );						//오늘날짜
+$finishday=(int)eregi_replace("-","",$dalist[finishday]);	//마감일
+
+
+$FINISHDAYSTR=($finishday < $current_date) ? "<font color=red>$dalist[finishday]</font>" : $dalist[finishday];
+if($dalist[finishday_no])$FINISHDAYSTR="수 시 모 집";		//수시모집이면 '수시모집'으로 출력
+
+echo("
+	<tr>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR>
+	<a href=$sfile[list_offer_view]?tcode=$tcode&seq=$da[seq]>$dalist[title]</a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$da[level]</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'>
+	<a href=\"javascript:window_level('db=guin_list&tcode=$tcode&seq=$da[seq]&mode=admin')\"><font color=green>레벨</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green></font>$FINISHDAYSTR</td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$dalist[id_fk_offermem]</font></td>
+	</tr>
+	");
+}//for
+
+//구직제목
+//==============================================================================
+echo("
+</table>
+</div>
+
+<br><br>
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=750 bgcolor=black>
+<tr>
+<td bgcolor=whitesmoke width='590' height='20'><p align='left'><font color=$SETOUTLINE_COLOR_CHAR>구직시작화면출력목록</font></td>
+<td bgcolor=whitesmoke width='30' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>상태</font></td>
+<td bgcolor=whitesmoke width='30' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>레벨</font></td>
+<td bgcolor=whitesmoke width='80' height='20'><p align=center><font color=$SETOUTLINE_COLOR_CHAR>회원아이디</font></td>
+</tr>
+");
+//구직 level DB읽어오기(먼저 구인(whatmode=1)튜플만불로온다.) whatmode=0 <-구인  1<-구직
+//==========================================================================
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+//==========================================================================
+$QUE="
+		SELECT tcode, seq, finishday, level FROM $table_jelse[level] WHERE whatmode=1 ORDER BY weight
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);	
+
+//구직리스트DB읽어오기
+//==========================================================================
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+//==========================================================================
+for($i=0;$i<$total;$i++){	 
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+	$tcode=$da[tcode];	//해당 level 튜플의 tcode명추출
+	$seq=$da[seq];			//해당 level 튜플의 seq명추출
+		
+$QUE="SELECT id_fk_huntmem, title FROM $table_hunt[$tcode] WHERE seq=$seq";	
+$RESULTOFFER=mysql_query($QUE) or die(mysql_error($table_connect));
+$dalist = mysql_fetch_array($RESULTOFFER);   //결과를 한줄씩 배열로 넣는다.
+
+echo("
+	<tr>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR>
+	<a href=$sfile[list_hunt_view]?seq=$da[seq]&tcode=$tcode>$dalist[title]</a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$da[level]</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'>
+	<a href=\"javascript:window_level_hunt('db=gugic_list&tcode=$tcode&seq=$da[seq]&mode=admin')\"><font color=green>레벨</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$dalist[id_fk_huntmem]</font></td>
+	</tr>
+	");
+}//for
+
+
+echo("
+</table>
+</div>
+
+
+
+</td>
+</tr>
+</table>
+</div>
+</BODY>
+</HTML>
+");
+?>

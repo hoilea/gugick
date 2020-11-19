@@ -1,0 +1,59 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_offer_admin_del.phtml(구인회원의 등록글 리스트에서 선택된 메세지삭제하기)
+
+include("inc_initarray.phtml");
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//구인등록글에서 해당 seq삭제
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+
+if(!count($del))Err_Msg("삭제하려는 등록글을  하나 이상 선택 하십시오!");	// 1#15  =>    seq#tcode  [삭제작업할 DB는 구직리스트DB($table_hunt)이다]
+for($i=0;$i<count($del);$i++){
+$delarray=explode("#",$del[$i]);
+$seq=$delarray[0];		//삭제seq
+$tcode=$delarray[1];	//삭제작업테이블
+$QUE="DELETE FROM $table_offer[$tcode] WHERE seq = $seq";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+}
+
+//시작목록테이블(구인)에서 해당 $dbtcodeseq삭제
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+for($i=0;$i<count($del);$i++){
+$delarray=explode("#",$del[$i]);
+$seq=$delarray[0];		//삭제seq
+$tcode=$delarray[1];	//삭제작업테이블
+$dbtcodeseq="guin_list".$tcode.$seq;									//finishday를 수정할 시작목록테이블의 대상  dbtcodeseq 키 생성
+$QUE="DELETE FROM $table_jelse[level] WHERE dbtcodeseq='$dbtcodeseq' AND whatmode=0"; 
+//whatmode <= 구인모드인가? 구직모드인가? 0<-구인 1<-구직	
+//echo $QUE; exit;
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+}
+
+echo("<META http-equiv='refresh' content='0;url=$sfile[list_offer_admin]?db=guin_mem'>");
+?>

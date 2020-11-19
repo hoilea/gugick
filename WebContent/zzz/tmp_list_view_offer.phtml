@@ -1,0 +1,193 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//tmp_list_view.phtml(수신메세지리스트내용보기)
+include("inc_initarray.phtml");
+include("./html_style.phtml");
+include($MAINMENU);
+//--------------------------------------------------------------------------------
+$max_line_value=$line_max; //리스트줄수     //아래에서 값이 변할수 있는 변수(max_line_value).
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[$db],$dbuser,$dbpass,$HOST);
+
+
+//구직과 구인을 구별하여 쿼리를 적용한다.
+$QUE="SELECT seq, id_fk_huntmem,title,content, date  FROM $table_tmp[$table] WHERE id_mine = '$id_mine'  ORDER BY seq DESC";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+//----------------------------------------------------------
+//내용
+$da[content]=nl2br($da[content]); //\n을 -> <br>로
+$da[content]=eregi_replace(" ","&nbsp;",$da[content]); //space를 -> &nbsp;로
+//----------------------------------------------------------
+
+echo("
+<HTML>
+<HEAD>
+</HEAD>
+<BODY>
+<title>구직등록자검색</title>
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td width=$SET_WIDTH_HUNT_LIST height='15' valign='bottom'>
+<p align='left'><font color=$SETSUBJECT_CHARCOLOR>『수신메세지 >> 자세히보기』</font></td>
+</tr>
+</table>
+</div>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='130' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>보낸시각</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='670' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>제목</font></td>
+</tr>
+
+<tr>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$da[date]</font></td>
+<td bgcolor='#f5f5f5' height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR>&nbsp;$da[title]</a></font></td>
+</tr>
+</FORM>
+</TABLE>
+</DIV>
+
+<br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=white>
+<tr>
+<td height='17' valign='bottom'><p align='right'>
+<a  href='#' onClick='history.back()'><font color=$SETPYO_CHARCOLOR><u>/목록으로</u></font></a>
+</td>
+</tr>
+</FORM>
+</TABLE>
+</DIV>
+
+
+<DIV align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=0><tr><td width=$SET_WIDTH_HUNT_LIST><p align=center><br>
+<tr>
+<TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_outline>
+<td bgcolor=$SETPYO_BACKCOLOR width=800 height='30' valign='middle'><br><font color=$SETPYO_CHARCOLOR>$da[content]</font></td>
+</tr>
+</TABLE>
+</DIV><BR><BR><BR></BODY></HTML>
+");
+
+//입사희망한 구직자의 상세정보출력
+//-------------------------------------------------------------
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT  name, sex, email, tel, homepage, birth_yyyy, birth_mm, birth_dd, juso_num, juso, educational_last, educational_detail
+			FROM $table_mem[hunt] 
+			WHERE id='$da[id_fk_huntmem]'
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   
+//----------------------------------------------------------------
+
+//성별
+$NUM_sex=$da_mem[sex];
+
+//최종학력
+$NUM_educational_last=$da_mem[educational_last];
+
+//학력사항
+//----------------------------------------------------------
+$da_mem[educational_detail]=nl2br($da_mem[educational_detail]); //\n을 -> <br>로
+$da_mem[educational_detail]=eregi_replace(" ","&nbsp;",$da_mem[educational_detail]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+
+echo("
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='100' height='20'<p align='center'><font color=$SETPYO_CHARCOLOR>이름</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='700' height='20'<p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[name]</font></td>
+</td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>성별</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</a></font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>연락처</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[tel]</a></font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>메일</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><p>
+<a href=mailto:$da_mem[email]><u><img src=$ICON_EMAIL border=0><font color=$SETPYO_CHARCOLOR>$da_mem[email]</font></u></a>
+<a href=$da_mem[homepage] target=blank><img src=$ICON_HOME border=0><font color=$SETPYO_CHARCOLOR><u>$da_mem[homepage]</u></font></a>
+</font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>생년월일</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[birth_yyyy]년$da_mem[birth_mm]월$da_mem[birth_dd]일</a></font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>주소</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[juso] ($da_mem[juso_num])</a></font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR> 최종학력</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='20' valign='bottom'><font color=$SETPYO_CHARCOLOR>$STR_educational_last[$NUM_educational_last]</font>
+</tr>
+
+</TABLE></DIV>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW_CO bgcolor=white>
+<tr>
+<td height='20' valign='bottom'><p align='right'><font color=$SETPYO_CHARCOLOR>
+</td>
+</tr>
+</FORM>
+</TABLE>
+</DIV>
+
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='100' height='20' valign='center'><p align='center'><font color=$SETPYO_CHARCOLOR>학력사항</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='700' height='20' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[educational_detail]</font>
+</tr>
+</TABLE></DIV>
+$setinfo_tail
+</BODY>
+</HTML>
+")
+?>

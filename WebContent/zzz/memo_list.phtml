@@ -1,0 +1,170 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//memo_list.phtml(메모리스트)
+//$modememoview 값이 넘어오면 그냥 메모리스트를 보인다.
+include("inc_initarray.phtml");
+include("html_style.phtml");
+//----------------------------------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Self_Close(){
+echo("
+<script>
+<!--
+self.close();
+//-->
+</script>
+");
+exit;
+}
+
+//Str_Plus($delimiter,$origin_str,$plus_str);				//$origin_str.#.$plus_str 리턴
+//Exist_Str($origin_str,$search_str);							//$origin_str 문자열(1#2)에서 $search_str(1)이 있으면 1 없으면 0
+//----------------------------------------------------------------------------------------------------
+function Str_Plus($delimiter,$origin_str,$plus_str){
+			$return_str=(!$origin_str) ? $plus_str : $origin_str.$delimiter.$plus_str;
+			return $return_str;
+			}
+
+//---------------------------------------------------------------------------------------------------
+function Exist_Str($delimiter,$origin_str,$search_str){
+			$returnvalue=0;
+			$comparray=explode($delimiter,$origin_str);
+			for($i=0;$i<count($comparray);$i++){			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+			if($comparray[$i]==$search_str)$returnvalue=1;
+			}
+			return $returnvalue;
+			}
+//----------------------------------------------------------------------------------------------------
+if($HTTP_COOKIE_VARS[USER_COOKIE_HUNT]){
+																		$DBSELECTSTR="gugic_mem";
+																		$TABLESTR="hunt";
+																		$LOGINID=$USER_COOKIE_HUNT;
+																		}else{
+																		$DBSELECTSTR="guin_mem";
+																		$TABLESTR="offer";
+																		$LOGINID=$USER_COOKIE_OFFER;
+																		}
+
+$TC=Db_Connect($dfile[$DBSELECTSTR],$dbuser,$dbpass,$HOST);	//회원모드에따라 DB접속
+$QUE="SELECT memoinfo FROM $table_mem[$TABLESTR] WHERE id='$LOGINID'";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$memoinfo=mysql_result($RESULT,0,0);			//$memoinfo추출
+if(!$memoinfo&&$modememoview){Self_Close();exit;}
+
+if(!$modememoview){	 //$modememoview값이 있으면 작업없이 현재 메모저장된 자료만 보여준다.
+
+	$plus_str=$db."|".$tcode."|".$seq;								//gugic_list|1|5 형태로변환
+	$exist_result=Exist_Str("#",$memoinfo,$plus_str);		//이미 메모된등록글인지조사
+	
+
+	if($exist_result==0){														//	이미존재하는 메모글이면 무시
+		$memo_list_str=Str_Plus("#",$memoinfo,$plus_str);		//새로운문자열결합
+		$QUE="UPDATE $table_mem[$TABLESTR] SET memoinfo='$memo_list_str' WHERE id='$LOGINID'";
+		$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+		}else{	//이미 있으면
+		$memo_list_str=$memoinfo;
+		}
+
+}else{
+$memo_list_str=$memoinfo;
+}
+
+echo("
+<HTML>
+<BODY>
+<HEAD>
+<SCRIPT language='JavaScript'>
+	function del_submit() {
+	document.form.submit();
+	}
+</SCRIPT>
+<title>체크리스트</title>
+</HEAD>
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=450 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='420' height='20'><p align='left'><font color=$SETSUBJECT_CHARCOLOR>『체크리스트』- 체크리스트 메뉴에서 자세히 볼 수 있습니다!</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='20'><p align='center'><font color=$SETSUBJECT_CHARCOLOR>삭제</font></td>
+</tr>
+");
+
+
+//----------------------------------------------------------------------------------------------------------------------
+$memoinfoarray=explode("#",$memo_list_str);									//gugic_list|1|4#gugic_list|1|4 => $memoinfoarray[0]=gugic_list|1|4      $memoinfoarray[1]=gugic_list|1|4
+
+for($i=0;$i<count($memoinfoarray);$i++){       	 
+		$each_memoinfoarray=explode("|",$memoinfoarray[$i]);			//gugic_list|1|4  => $each_memoinfoarray[0]=gugic_lis  $memoinfoarray[1]=1 $memoinfoarray[2]=4
+	
+		$DBSELECT=$each_memoinfoarray[0];										//DB결정
+		$TCODE=$each_memoinfoarray[1];		
+		$QUE=($each_memoinfoarray[0]=="gugic_list") ? "SELECT title FROM $table_hunt[$TCODE] WHERE seq=$each_memoinfoarray[2]"	
+																		   : "SELECT title FROM $table_offer[$TCODE] WHERE seq=$each_memoinfoarray[2]";	
+
+		//내용을 보여주는 스크립트 결정
+		$SFILESELECT=($each_memoinfoarray[0]=="gugic_list") ?  $sfile[memo_list_hunt_view] : $sfile[memo_list_offer_view];
+		
+		$TC=Db_Connect($dfile[$DBSELECT],$dbuser,$dbpass,$HOST); //DB연결
+
+
+		//체크리스트된 자료중에 삭제된 항목이 있다면 그 항목은 무시한다.
+		//----------------------------------------------------------------
+		$TESTQUE=($each_memoinfoarray[0]=="gugic_list") ? "SELECT count(*) FROM $table_hunt[$TCODE] WHERE seq=$each_memoinfoarray[2]"	
+																					:"SELECT count(*) FROM $table_offer[$TCODE] WHERE seq=$each_memoinfoarray[2]";	
+		$result_testque=mysql_query($TESTQUE) or die(mysql_error($table_connect));
+		$total_testque=mysql_result($result_testque,0,0);	
+		//----------------------------------------------------------------
+		
+		if($total_testque){ //체크된 자료가 제대로 있을때만 보인다.
+		$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+		$title=mysql_result($RESULT,0,0);	 //제목
+		
+		//$AHREFSTR="<a href=$SFILESELECT?tcode=$TCODE&seq=$each_memoinfoarray[2]&modememoview=1><font color=$SETPYO_CHARCOLOR>$title</font></a>";
+		$AHREFSTR="<font color=$SETPYO_CHARCOLOR>$title</font>";
+		}else{
+		$AHREFSTR="<a href=$sfile[memo_list_del]?delp=$i><font color=green>이 체크에 해당되는 등록글은 존재하지 않습니다. </font></a>";
+		}
+		echo("
+		<tr>
+		<td bgcolor=$SETPYO_BACKCOLOR height='20'><p align='left'>
+		$AHREFSTR
+		</td>
+		<td bgcolor=$SETPYO_BACKCOLOR height='20'><p align='center'>
+		<font color=$SETOUTLINE_COLOR_CHAR>
+		<a href=$sfile[memo_list_del]?delp=$i>
+		<img src=$ICON_DEL border=0></a></font></td>
+		</tr>
+		");
+	}//for
+//---------------------------------------------------------------------------------------------------------------------
+
+echo("
+<input type=button value='창닫기' onClick='self.close()'><br><br>
+</table>
+</div>
+");
+
+?>

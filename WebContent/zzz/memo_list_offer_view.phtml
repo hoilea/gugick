@@ -1,0 +1,275 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//memo_list_offer_view.phtml(메모리스트중특정자료내용보기(구인))
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//=============================================================================
+if($HTTP_COOKIE_VARS[USER_COOKIE_HUNT]){
+																		$DBSELECTSTR="gugic_mem";
+																		$TABLESTR="hunt";
+																		$LOGINID=$USER_COOKIE_HUNT;
+																		}else{
+																		$DBSELECTSTR="guin_mem";
+																		$TABLESTR="offer";
+																		$LOGINID=$USER_COOKIE_OFFER;
+																		}
+
+$TC=Db_Connect($dfile[$DBSELECTSTR],$dbuser,$dbpass,$HOST);	//회원모드에따라 DB접속
+$QUE="SELECT memoinfo FROM $table_mem[$TABLESTR] WHERE id='$LOGINID'";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$memoinfo=mysql_result($RESULT,0,0);						//$memoinfo추출
+$memo_list_str=$memoinfo;
+
+echo("
+<HTML>
+<HEAD>
+<title>체크리스트</title>
+</HEAD>
+<BODY>
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_LIST bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='770' height='20'><p align='left'><font color=$SETSUBJECT_CHARCOLOR>『체크리스트』</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='20'><p align='center'><font color=$SETSUBJECT_CHARCOLOR>삭제</font></td>
+</tr>
+");
+
+
+//----------------------------------------------------------------------------------------------------------------------
+$memoinfoarray=explode("#",$memo_list_str);									//gugic_list|1|4#gugic_list|1|4 => $memoinfoarray[0]=gugic_list|1|4      $memoinfoarray[1]=gugic_list|1|4
+
+for($i=0;$i<count($memoinfoarray);$i++){       	 
+		$each_memoinfoarray=explode("|",$memoinfoarray[$i]);			//gugic_list|1|4  => $each_memoinfoarray[0]=gugic_lis  $memoinfoarray[1]=1 $memoinfoarray[2]=4
+	
+		$DBSELECT=$each_memoinfoarray[0];										//DB결정
+		$TCODE=$each_memoinfoarray[1];		
+		$QUE=($each_memoinfoarray[0]=="gugic_list") ? "SELECT title FROM $table_hunt[$TCODE] WHERE seq=$each_memoinfoarray[2]"	
+																		   : "SELECT title FROM $table_offer[$TCODE] WHERE seq=$each_memoinfoarray[2]";	
+
+		//내용을 보여주는 스크립트 결정
+		$SFILESELECT=($each_memoinfoarray[0]=="gugic_list") ?  $sfile[memo_list_hunt_view] : $sfile[memo_list_offer_view];
+		
+		$TC=Db_Connect($dfile[$DBSELECT],$dbuser,$dbpass,$HOST); //DB연결
+
+
+		//체크리스트된 자료중에 삭제된 항목이 있다면 그 항목은 무시한다.
+		//----------------------------------------------------------------
+		$TESTQUE=($each_memoinfoarray[0]=="gugic_list") ? "SELECT count(*) FROM $table_hunt[$TCODE] WHERE seq=$each_memoinfoarray[2]"	
+																					:"SELECT count(*) FROM $table_offer[$TCODE] WHERE seq=$each_memoinfoarray[2]";	
+		$result_testque=mysql_query($TESTQUE) or die(mysql_error($table_connect));
+		$total_testque=mysql_result($result_testque,0,0);	
+		//----------------------------------------------------------------
+		
+		$FONTCOLOR=($pointnum==$i)?"$SETENABLE_TITLECOLOR":"$SETPYO_CHARCOLOR";	 //보고있는글에 해당되는 글은 리스트에서 강조색으로 
+
+		if($total_testque){ //체크된 자료가 제대로 있을때만 보인다.
+		$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+		$title=mysql_result($RESULT,0,0);	 //제목
+		$AHREFSTR="<a href=$SFILESELECT?tcode=$TCODE&seq=$each_memoinfoarray[2]&modememoview=1&pointnum=$i><font color=$FONTCOLOR>$title</font></a>";
+		}else{
+		$AHREFSTR="<a href=$sfile[memo_list_del]?delp=$i&mode=memo><font color=green>이 체크에 해당되는 등록글은 존재하지 않습니다. </font></a>";
+		}
+
+		echo("
+		<tr>
+		<td bgcolor=$SETPYO_BACKCOLOR height='20'><p align='left'>
+		$AHREFSTR
+		</td>
+		<td bgcolor=$SETPYO_BACKCOLOR height='20'><p align='center'>
+		<font color=$SETOUTLINE_COLOR_CHAR>
+		<a href=$sfile[memo_list_del]?delp=$i&mode=memo>
+		<img src=$ICON_DEL border=0></a></font></td>
+		</tr>
+		");
+	}//for
+//---------------------------------------------------------------------------------------------------------------------
+
+echo("
+</table>
+</div>
+</BODY>
+</HTML>
+");
+//===========================================================================================
+
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+
+//hit업테이트
+$QUEUPDATE="UPDATE $table_offer[$tcode] SET hit=hit+1 WHERE seq=$seq";
+$RESULT=mysql_query($QUEUPDATE) or die(mysql_error($table_connect));
+
+$QUE="SELECT  *	FROM $table_offer[$tcode] WHERE seq=$seq";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+$da_guin = mysql_fetch_array($RESULT);   //구직리스트의 내용읽기
+
+//모집요강
+//----------------------------------------------------------
+$da_guin[content]=nl2br($da_guin[content]); //\n을 -> <br>로
+$da_guin[content]=eregi_replace(" ","&nbsp;",$da_guin[content]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+
+//#15# => '제주' 형태로 만들기
+//--------------------------------------------------------------------------
+$dstr_area=explode("#",$da_guin[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$dstr_area[$i];
+													$AREA_STR=$AREA_STR.$STR_work_area[$check_num]."/";
+													}
+$AREA_STR=substr($AREA_STR,0,-1); // 마지막 '/'제거
+//-------------------------------------------------------------------------
+
+
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+
+$QUE="
+SELECT  company 
+FROM $table_mem[offer] 
+WHERE id='$da_guin[id_fk_offermem]'
+";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//------------------------
+$NUM_sex=$da_guin[sex];
+$NUM_work_kind=$da_guin[work_kind];
+$NUM_salary_year=$da_guin[salary_year];
+$NUM_educational_last=$da_guin[educational_last];
+$NUM_experience_year=$da_guin[experience_year];
+$NUM_experience_year_radio=$da_guin[experience_year];
+$NUM_experience_for=$da_guin[experience_for];
+$EXPERIENCE_FORSTR=($NUM_experience_year_radio==2) ? $STR_experience_year_offer[$NUM_experience_for] : ''; //경력자를 구한다면 경력년수출력
+
+$NUM_salary_year=$NUM_salary_year+1;
+$SALARYMSTR=($da_guin[salary_monthly]) ? "월 $da_guin[salary_monthly] 만원" : $STR_salary_year[$NUM_salary_year];
+//------------------------
+
+//구직회원이 로그인을 하지 않았으면 입사희망메세지기능을 사용하지 못한다!
+$LOGIN_STR=($USER_COOKIE_HUNT)
+?"<a href=\"javascript:window_hope('$sfile[tmp_hunt]?tcode=$tcode&seq=$seq&toemail=$da_guin[email]&p=$da_guin[id_fk_offermem]')\"><font color=$SETPYO_CHARCOLOR><u>/입사희망</u></font></a>"
+:"<a href=$sfile[login_form_gugic]?sfile2=$sfile[list_offer_view]&tcode=$tcode&seq=$seq><font color=$SETPYO_CHARCOLOR><u>/입사희망</u></font></a>";
+
+$WINDOWWIDTH=$SET_WIDTH_OFFER_VIEW_CO+50;		//회사상세정보윈도우창
+
+//학력제한여부결정
+$STREDUCATION_LAST=(!$NUM_educational_last)?"학력무관":"$STR_educational_last[$NUM_educational_last] 이상";
+
+echo("
+<HTML>
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+
+function window_hope(str){ //입사희망메세지작성폼
+open(str,'new_win','width=650,height=450,scrollbars=yes,resizable=yes');
+}
+
+function window_company(str){ //회사정보
+open(str,'new_win','width=$WINDOWWIDTH,height=550,scrollbars=yes,resizable=yes');
+}
+//-->
+</SCRIPT>
+<title>구직등록자정보</title>
+</HEAD>
+<BODY>
+<br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='60'><p align='center'><font color=$SETPYO_CHARCOLOR><b>회사명</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='340'><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[company]</font></td>
+<td bgcolor=$setcolor_ctitle  width='60' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>지급연봉</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR  width='340' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$SALARYMSTR</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>담당자</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[name]</a></font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>경력제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_experience_year_radio[$NUM_experience_year_radio] $EXPERIENCE_FORSTR</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>메일</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><a href=mailto:$da_guin[email]><font color=$SETPYO_CHARCOLOR><u>$da_guin[email]</u></font></a></td>
+<td bgcolor=$setcolor_ctitle   height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>성별제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR  height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>전화</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[tel]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>나이제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[age_limit] 이후 출생자</font></td>
+</tr>
+<tr>
+<td bgcolor=$setcolor_ctitle 	valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무지역</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$AREA_STR</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>학력제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STREDUCATION_LAST</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무형태</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_work_kind[$NUM_work_kind]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+</TABLE></DIV>
+
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW bgcolor=white>
+<tr>
+<td height='17' valign='bottom'><p align='right'><font color=$SETPYO_CHARCOLOR>
+<a href='#' onClick=\"window_company('$sfile[list_offer_view_co]?tcode=$tcode&seq=$seq')\"> <font color=$SETPYO_CHARCOLOR><u>/회사정보</u></font></a> &nbsp;
+$LOGIN_STR
+</td>
+</tr>
+</TABLE>
+</DIV>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW bgcolor=$setcolor_outline>　　　　
+<tr>
+<td bgcolor=white width=$SET_WIDTH_OFFER_VIEW valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<br>
+$da_guin[content]
+<br>
+</font>
+</tr>
+</TABLE></DIV>
+$setinfo_tail
+</BODY>
+</HTML>
+")
+?>

@@ -1,0 +1,122 @@
+<HTML>
+<HEAD>
+<TITLE>우편번호검색</TITLE>
+<SCRIPT LANGUAGE='JavaScript'>
+<!--
+function start_focus(){
+document.f.search_post.focus();
+}
+
+function finish(post,addr){
+window.opener.document.form.juso_num.value=post;
+window.opener.document.form.juso.value=addr;
+window.opener.document.form.scale.focus();
+window.opener.document.form.juso.focus();
+self.close()
+}
+
+//-->
+</SCRIPT>
+<TITLE>주소/우편번호찾기</TITLE>
+</HEAD>
+<BODY>
+
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//구인회원자동주소입력 (post_search_offer.phtml)
+include('inc_initarray.phtml');
+include("html_style.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+
+
+if($search_post){    //검색시작....
+$search_que="SELECT *FROM $table_jelse[post]  WHERE  CONCAT(do,si,dong) like '%$search_post%'";
+$result=mysql_query($search_que) or die(mysql_error($table_connect));
+$total=mysql_num_rows($result);    //전체행수
+if($total<=0)Err_Msg("우편번호를 찾을수 없습니다.검색어를 확인하세요!");
+
+echo("
+<html>
+<BODY onLoad=\"javascript:start_focus()\">
+<form name=f action=$PHP_SELF method=POST>
+<center>
+<br><br>
+<img src=$ICON_PV border=0>찾는 지역의 읍/면/동 을 입력하세요!(예: 어양동)
+<br><br>
+<input type=hidden name=mode value=$mode>
+<input type=text name=search_post size=21><INPUT type=submit value=찾기>
+</center>
+</form>
+</html>
+");
+
+for ($i=0;$i<$total;$i++) 
+							{
+								mysql_data_seek($result,$i);
+								$data_array= mysql_fetch_array($result);														
+								$addr=$data_array[2]."  ".$data_array[3]."  ".$data_array[4]." ";														
+								if($mode=="re_post") //수취인 우편번호 입력이면
+								{
+								$str="<a href="."\""."javascript:re_finish('$data_array[1]','$addr')"."\"".">$addr</a><br>";	
+								}else{
+								$str="<a href="."\""."javascript:finish('$data_array[1]','$addr')"."\"".">$addr</a><br>";																						
+								}
+					
+						echo("
+								<html>
+								<body>
+								<left>
+								$str
+								</left>
+								</body>
+								</html>
+								");
+							}
+
+}else
+{				
+echo("
+<html>
+<BODY onLoad='start_focus()'>
+<INPUT type=button value=창닫기 onClick='self.close()'>
+<form name=f action=$PHP_SELF method=POST>
+<center>
+<br><br>
+<img src=$ICON_PV border=0>찾는 지역의 읍/면/동 을 입력하세요!(예: 어양동)
+<br><br>
+<input type=hidden name=mode value=$mode>
+<input type=text name=search_post size=21><INPUT type=submit value=찾기>
+</center>
+</form>
+</html>
+");
+}
+?>
+</BODY>
+</HTML>

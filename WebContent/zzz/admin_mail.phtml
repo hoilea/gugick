@@ -1,0 +1,165 @@
+<HTML>
+<HEAD>
+<script>
+<!--
+function start_focus(){
+document.sendmail.adminmail.focus();
+}
+
+function isReady( form ) {
+
+if ( form.adminmail.value == '' || form.content.value == null ){ 
+alert('관리자메일주소미입력');
+form.adminmail.focus();
+return false;
+}
+
+if ( form.title.value == '' || form.content.value == null ){ 
+alert('전체메일제목미입력');
+form.title.focus();
+return false;
+}
+
+if ( form.content.value == '' || form.content.value == null ){ 
+alert('내용미입력');
+form.content.focus();
+return false;
+}
+}
+//-->
+</script>
+</HEAD>
+
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+
+//admin_mail.phtml(구직/구인회원전체메일)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------------------------------
+function email($to,$subject, $msg,$from,$MAILER="/usr/sbin/sendmail -t  -ba") 
+{ 
+$header = sprintf("From: %s\nTo: %s\nSubject: %s\n",$from,$to,$subject); 
+$fp =popen($MAILER,"w"); 
+fputs($fp,$header); 
+fputs($fp,"$msg\n"); 
+pclose($fp); 
+} 
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+
+
+
+
+//메일폼제목결정
+$SELECTITLE=($target=="hunt")?"구직회원전체메일전송도구":"구인회원전체메일전송도구";
+
+
+if($work==SEND){ //보내기버튼을 누르면
+$header="$adminmail";
+if($htmlmime){$header.="\nContent-Type:text/html";}	//HTML모드로 보내기 이면 HTML타입으로..
+
+//DB-테이블결정
+$SELECTDB=($target=="hunt")?$dfile[gugic_mem]:$dfile[guin_mem];
+$SELECTABLE=($target=="hunt")?$table_mem[hunt]:$table_mem[offer];
+
+//-----------------------------------------------------------------------------------------------------
+$TC=Db_Connect($SELECTDB,$dbuser,$dbpass,$HOST);
+$QUE="
+		SELECT DISTINCT email FROM $SELECTABLE
+		";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);								 //총갯수
+if(!$total)Err_Msg("등록된 메일 주소가 없습니다");
+//-----------------------------------------------------------------------------------------------------
+
+$send_num=0; //보낸메일수 초기화 0
+
+for($i=0;$i<$total;$i++){ 
+mysql_data_seek($RESULT,$i);
+$email_str=mysql_fetch_array($RESULT);
+if($email_str[email]){
+					email($email_str[email],$title,$content,$header); //메일주소가 있을경우에만 전송
+					$send_num=$send_num+1;
+					}
+//---------------------------------------------------------------------------------------------------------	
+$wait=$i%$MAIL_MAX_LIMIT;	//$MAIL_MAX_LIMIT 회마다 한번씩 쉰다.
+if($wait==0 && $i!=0){				//200,400,800,...이고 $i가 0이 아닐때..
+								$string="총메일수:$total /전송중:$i  적당한시간을 두고 확인 버튼을 클릭 하세요";
+								echo("
+										<script>
+										<!--
+										alert('$string');
+										//-->
+										</script>
+										");
+							}//if
+//-----------------------------------------------------------------------------------------------------------
+}//for
+echo("
+<center>
+$send_num 명의 회원에게 전송하였습니다!
+<br><br>
+<input type=button value=종료 onClick='javascript:self.close()'>
+</center>
+");
+exit;
+}
+
+
+
+
+
+
+//전체메일작성폼
+echo("
+<HTML>
+<HEAD><TITLE>전체메일전송</TITLE></HEAD>
+<BODY  onLoad='start_focus()'>
+<FORM name=sendmail onSubmit='return isReady(sendmail)' METHOD=POST ACTION=$PHP_SELF >
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=600 bgcolor=$setcolor_outline>
+<tr><td width=600 height=25><p align=left>$SELECTITLE</td></tr>
+<tr><td height=25><p align=left>관리자메일주소<input type=text class=colorbox size=30 name=adminmail></td></tr>
+<tr><td height=25><p align=left>전체메일제목&nbsp;&nbsp;&nbsp;<input type=text class=colorbox size=60 name=title> &nbsp;&nbsp;
+<input type=checkbox name=htmlmime value=1>HTML
+</td></tr>
+<tr><td height=25><p align=center><textarea class=colorbox name=content rows=20  cols=100></textarea></td></tr>
+</TABLE>
+</DIV>
+<CENTER>
+<input type=hidden name=target value=$target>
+<input type=hidden name=work value=SEND>
+<input type=submit value=보내기>
+</CENTER>
+</FORM>
+</BODY>
+</HTML>
+");
+?>

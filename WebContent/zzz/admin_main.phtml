@@ -1,0 +1,32 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_main.phtml		(운영자모드로그인)
+
+include("inc_initarray.phtml");
+
+cfunction authenticate(){
+Header("WWW-authenticate: basic realm=\"운영자아디와암호입력!\" ");
+Header("HTTP/1.0 401 Unauthorized");
+
+$title="Invaild Login";
+echo("
+<CENTER>
+<fonr size=2>접근불가(아이디/암호확인)</font>
+</CENTER>
+");
+exit;
+}
+if(!isset($PHP_AUTH_USER)){	
+										authenticate(); 
+										} else{  //isset =>존재여부    //통과되면 g_input_form을 보인다.
+													if($PHP_AUTH_USER!=$ADMINID || $PHP_AUTH_PW!=$ADMINPASSWORD)authenticate();
+													setcookie("jsadmincookieval","$ADMINID$ADMINPASSWORD");
+													echo("<META http-equiv='refresh' content='0;url=$sfile[admin_menu]'>");	//로그인을 마치면 관리자메뉴로 이동
+													}
+?>

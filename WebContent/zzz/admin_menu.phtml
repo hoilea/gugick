@@ -1,0 +1,88 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_menu.phtml	(관리자메뉴)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+echo("
+<html>
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_memo(str){ //메모
+url= '$sfile[admin_mail]?'+str;
+window.open(url,'new_win','width=700,height=450,scrollbars=yes,resizable=yes');
+}
+
+function start_focus(){
+document.code.searchcode.focus();
+}
+
+function isReady( form ) {
+if ( form.searchcode.value == '' || form.searchcode.value == null ){ 
+document.code.searchcode.focus();
+return false;
+}
+}
+
+
+//-->
+</SCRIPT>
+<title>관리자메뉴</title>
+</head>
+<BODY  onLoad='start_focus()'>
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=black>
+<tr>
+<td bgcolor=whitesmoke width='800' height='20'><p align='left'>
+<font color=$SETOUTLINE_COLOR_CHAR>
+<a href=$sfile[index]>시작화면</a>
+</font></td>
+</tr>
+</table>
+</div>
+<br>
+<br>
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=gray>
+<tr><td bgcolor=$SETPYO_BACKCOLOR width=800 height=20> <a href=$sfile[member_list_hunt]><font color=gray>회원관리(구직)</a></td></tr>
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20> <a href=$sfile[member_list_offer]><font color=gray>회원관리(구인)</a></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20> <a href='#' onClick=window_memo('target=hunt')><font color=gray>(구직회원전체메일)</a></td></tr>
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20> <a href='#' onClick=window_memo('target=offer')><font color=gray>(구인회원전체메일)</a></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20> <a href=$sfile[admin_start_list]><font color=gray>시작출력등록글관리</a></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20> <a href=$sfile[admin_se_tup]><font color=gray>환경설정(HTML/색상등등)</a></td></tr>
+
+<tr><td bgcolor=$SETPYO_BACKCOLOR height=20>
+<br><br>
+<font color=gray>등록코드로 해당등록글찾기(구인/구직등록자가 코드를 알려주며 시작페이지로 자기글을 출력해달라고 요청할때사용)
+<FORM name=code  onSubmit='return isReady(code)' METHOD=POST ACTION=$sfile[admin_searchcode]>
+<input type=text size=20 name=searchcode>
+<input type=submit value='찾기'>
+</FORM>
+</td>
+</tr>
+
+</table>
+</div>
+</body>
+</html>
+");
+?>

@@ -1,0 +1,150 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+
+//###########################################
+//이부분만 수정하여 주세요!
+//###########################################
+//DB 유저
+
+$HOST="localhost";									#DB_hostname	
+$SBROAD_DBNAME="db_name";				#DB_name
+$dbuser="db_id";									#DB_id
+$dbpass="db_password";						#DB_password
+
+
+//프로그램에서 사용될 관리자 아이디및 비밀번호(꼭 변경할것)
+$ADMINID="111";
+$ADMINPASSWORD="111";
+
+$SET_LEVELMODE=1;								//0 <= 관리자만 레벨조정가능 1<=각 사용자가 등록글관리에서 레벨조정가능	
+//############################################
+
+
+
+
+
+
+
+
+//아래 부터는 선택사항
+
+
+
+
+
+
+
+//글자/배경색상
+//〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+$SETSUBJECT_CHARCOLOR="330099";		//표주제글자색
+$SETOUTLINE_COLOR_CHAR="330099";	 	//표제목글자색
+$SETPYO_CHARCOLOR="gray";			//표글자색
+$SETENABLE_TITLECOLOR="green";		//체크리스틀에서 특정글의 상세내용볼때 해당 제목색상
+$SETFINDTITLECOLOR="3854B8";				//구직/구인리스트검색화면의 제목글색	
+//〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+
+
+
+//---------------------------------------------------------
+$SETPYO_BACKCOLOR="white";			//셀색상
+$SETBGCOLOR="white";						//기본배경색				
+$SETCHARCOLOR="black";					//기본글자색
+//---------------------------------------------------------
+
+$SET_WIDTH_LIST=800;						//기본표리스트폭
+$SET_WIDTH_HUNT_LIST=800;				//list_hunt.phtml의 표푝
+$SET_WIDTH_HUNT_VIEW=800;				//list_hunt_view.phtml의 표푝
+$SET_WIDTH_OFFER_LIST=800;			//list_offer.phtml의 표푝
+$SET_WIDTH_OFFER_VIEW=800;			//list_offer_view.phtml의 표푝
+$SET_WIDTH_OFFER_VIEW_CO=500;		//list_offer_view_co.phtml의 표푝
+$SET_WIDTH_SCOUT=600;					//tmp_offer.phtml의 표푝
+$SET_WIDTH_MREG=800;						//mreg_hunt.phtml, mreg_offer.phtml의 표푝
+//--------------------------------------------------------
+
+
+/*디레토리안내
+ptd			증명사진들
+idat			프로그램아이콘들
+images		사이트구축에 필요한 이미지들
+BACKUP	백업배치화일(./backup)및 백업디렉토리
+*/
+
+
+//이미지화일
+$ICON_DIR="./idat/";
+$ICON_EMAIL=$ICON_DIR."icon_email.gif";				//메일
+$ICON_DEL=$ICON_DIR."icon_del.gif";						//삭제 X
+$ICON_CONTENT=$ICON_DIR."icon_detail.gif";			//내용
+$ICON_MEMO=$ICON_DIR."icon_memo.gif";				//메모
+$ICON_NOPHOTO=$ICON_DIR."icon_nophoto.gif";		//기본사진이미지
+$ICON_SEARCH=$ICON_DIR."icon_search.gif";			//검색버튼
+$ICON_PV=$ICON_DIR."icon_pv.gif";							//패스워드정보아이콘
+$ICON_HOME=$ICON_DIR."icon_home.gif";				//홈페이지링크아이콘
+$ICON_HOT=$ICON_DIR."icon_hot.gif";						//HOT마크
+$ICON_TITLEGUIN=$ICON_DIR."icon_titleguin.gif";		//시작목록구인타이틀
+$ICON_TITLEGUGIC=$ICON_DIR."icon_titlegugic.gif";	//시작목록구직타이틀
+$ICON_POINT1=$ICON_DIR."icon_point1.gif";				//포인트아이콘1
+$ICON_LOGO=$ICON_DIR."icon_logo.gif";					//사이트로고
+$ICON_AGREE=$ICON_DIR."icon_agree.gif";				//회원가입약관동의버튼
+$ICON_CANCEL=$ICON_DIR."icon_cancel.gif";			//회원가입취소버튼
+
+
+
+
+
+//메일서버경로 및 사진화일디렉토리
+$MAILER="/usr/sbin/sendmail -t  -ba";		//sendmail  경로
+$MAIL_MAX_LIMIT=200;							//전체메일전송시한루푸에 보낼수 있는 최대메일수
+$PHOTODIR="./ptd/";								//사진화일이 저장될 디렉토리 경로
+
+//삽입HTML화일이름
+$HTML_HEAD="inc_htmlhead.phtml";			//외각상단
+$HTML_TAIL="inc_htmltail.phtml";				//외각하단
+
+//메인메뉴화일
+$MAINMENU="mainmenu.phtml";
+
+
+//-------------------------------------------------------
+//각 폼의 체크엘리먼트시작과 끝
+$listreg_hunt_class_start=12;				//listreg_hunt.phtml(구직리시트등록폼)
+//$listreg_hunt_class_end=70;		
+$listreg_hunt_area_start=71;							
+//$listreg_hunt_area_end=92;
+
+$listreg_offer_class_start=24;				//listreg_offer.phtml(구인리시트등록폼)
+//$listreg_offer_class_end=82;		
+$listreg_offer_area_start=83;							
+//$listreg_offer_area_end=104;
+
+$mreg_hunte_class_start=20;				//mreg_hunte.phtml(구직회원정보수정폼)
+//$mreg_hunte_class_end=78;		
+$mreg_hunte_area_start=79;							
+//$mreg_hunte_area_end=100;
+
+$mreg_offere_class_start=21;				//mreg_offere.phtml(구인회원정보수정폼)
+//$mreg_offere_class_end=79;		
+$mreg_offere_area_start=80;							
+//$mreg_offere_area_end=101;
+
+$listreg_hunte_class_start=12;				//listreg_hunte.phtml(구직등록리스트수정폼)
+//$listreg_hunte_class_end=70;		
+$listreg_hunte_area_start=71;							
+//$listreg_hunte_area_end=92;
+
+$listreg_offere_class_start=12;				//listreg_offere.phtml(구인등록리스트수정폼)
+//$listreg_offere_class_end=70;		
+$listreg_offere_area_start=71;							
+//$listreg_offere_area_end=92;
+
+
+//색상/표폭/리스트수드의 환경설정
+//$line_max=30;									//리스트row수 <- 환경성절값으로 대치
+$max_move=10;									//이동단추버켓수 [1][2][3]~[10]
+?>

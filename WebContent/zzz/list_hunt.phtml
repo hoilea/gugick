@@ -1,0 +1,234 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_hunt.phtml(구직등록리스트)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+$line_max=$setnum_list;		//환경설정의 최대목록줄수적용
+//--------------------------------------------------------------------------------
+$max_line_value=$line_max; //리스트줄수     //아래에서 값이 변할수 있는 변수(max_line_value).
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+
+
+if(!$tr){ //로우총갯수가 없을때만, 즉 처음만 총갯수($tr)를 구한다.
+
+//=================================================================================
+if($work_kind != 99){$WHEREARR[]="work_kind='$work_kind'";}else{$WSTR_work_kind="";}
+if($work_area != 99){$WHEREARR[]="work_area LIKE '%#$work_area#%'";}else{$WSTR_work_area="";}
+if($age != 99){$WHEREARR[]="age <= $age";}else{$WSTR_age="";}
+if($sex != 99){$WHEREARR[]="sex=$sex";}else{$WSTR_sex="";}
+
+switch($experience_year){
+case 99:$WSTR_experience_year="";break;
+case 0: $WHEREARR[]="experience_year = 1";break;
+case 1: $WHEREARR[]="experience_year > 1";break;
+}
+if(!count($WHEREARR)){$WHERE_STR="";}else{$WHERE_STR = "WHERE ".implode(" AND ",$WHEREARR);} //선택사항이 하나도 없으면 WHERE문 없음
+//===============================================================================
+
+$QUE="
+		SELECT count(*) FROM $table_hunt[$tcode] 
+		$WHERE_STR";
+
+//----------------------------------------------------------------------------------
+
+///////////////echo($QUE);
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$tr=mysql_result($RESULT,0,0);
+$start=1;
+$page=1;	
+}
+
+//----------------------------------------------------------------------------------
+$total_page=ceil($tr/$max_line_value);		//분할 페이지수 
+$page_rest=$tr % $max_line_value;			//분할중 나머지 rows수	
+
+$limit_start=($max_line_value * $page)-($max_line_value); //LIMIT $limit_start, $max_line_value 
+if($page==1){
+					$limit_start=0;
+					if($tr < $max_line_value)$max_line_value=$page_rest;
+			     }
+if($page==$total_page && $page_rest)$max_line_value=$page_rest;
+//-----------------------------------------------------------------
+
+$QUE="SELECT seq, id_fk_huntmem, sex, experience_year, salary_year, salary_monthly, title, editdate, hit  FROM $table_hunt[$tcode] $WHERE_STR ORDER BY seq DESC";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);    //전체행수
+
+
+$LOGIN_STR=($HTTP_COOKIE_VARS[USER_COOKIE_HUNT])?"<a href=$sfile[listreg_hunt]?tcode=$tcode><font color=$SETPYO_CHARCOLOR>구직등록하기</font></a>"
+													  :"<a href=$sfile[login_form_gugic]?sfile2=$sfile[listreg_hunt]&tcode=$tcode&loginoption=sublogin><font color=$SETPYO_CHARCOLOR>구직등록하기</font></a>";
+
+if($jsadmincookieval=="$ADMINID$ADMINPASSWORD"){
+																				$MEMOSTR="레벨";
+																				$WINDOWSTR="window_level";
+																				$MEMOTITLESTR="<font color=green>레벨</font>";
+																			}else{
+																				$MEMOSTR="체크";	
+																				$WINDOWSTR="window_memo";
+																				$MEMOTITLESTR="<img src=$ICON_MEMO border=0>";
+																			}
+
+//제목부분
+echo("
+<HTML>
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_memo(str){ //메모
+url= '$sfile[memo_list]?'+str;
+window.open(url,'new_win','width=500,height=300,scrollbars=yes,resizable=yes');
+}
+
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_hunt]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+//-->
+</SCRIPT>
+</HEAD>
+<BODY>
+<title>구직리스트</title>
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_outline>
+<tr>
+<td width=$SET_WIDTH_HUNT_LIST height='15' valign='bottom'>
+<p align='left'><font color=$SETSUBJECT_CHARCOLOR>Page $total_page / Total $tr 『구직리스트 >> $table_title[$tcode]』</font></td>
+</tr>
+</table>
+</div>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='45' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>번호</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='45' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>성별</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='40' height='25'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>경력</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='70' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>희망연봉</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='460' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>제목</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='80' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>최근수정일</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>$MEMOSTR</b></font>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>조회</font>
+</td>
+</tr>
+");
+
+
+//------------------------------------------------------------------------------------------------------
+$inum=($page*$line_max)-$line_max;
+
+//------------------------------------------------------------------------------------------------------
+for($i=0;$i<$max_line_value;$i++){	
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+	$inum++;  //순번표시
+	//$HOT_STR=($da[t_hot_yesno]>400)?"<img src=$ICON_HOT border=0>":""; //hot마크값 t_hot_yesno가 1이면 마크를 보임 null이면 안보임
+
+	$NUM_experience_year=$da[experience_year];
+	/////////////echo $NUM_experience_year."----";
+	$NUM_salary_year=$da[salary_year];
+	$NUM_sex=$da[sex];
+	//내용
+
+$HERFMEMOSTR=(!$HTTP_COOKIE_VARS[USER_COOKIE_HUNT] && !$HTTP_COOKIE_VARS[USER_COOKIE_OFFER] && $jsadmincookieval != "$ADMINID$ADMINPASSWORD") 
+? "<a href='#' onClick=\"return alert('체크기능을 사용하시려면 로그인을 먼저하셔야 합니다!')\"><img src=$ICON_MEMO border=0></a>"
+: "<a href=\"javascript:$WINDOWSTR('db=gugic_list&tcode=$tcode&seq=$da[seq]')\">$MEMOTITLESTR</a>";
+
+																				
+//연봉/월급문자열결정
+$MONEY=($da[salary_monthly])?"월$da[salary_monthly]만원":$STR_salary_year[$NUM_salary_year];
+	
+	
+	echo("
+	<tr onMouseOver=this.style.backgroundColor='e5e5e5' onMouseOut=this.style.backgroundColor='#f5f5f5' bgcolor='#f5f5f5'>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$inum</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_experience_year[$NUM_experience_year]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$MONEY</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p>&nbsp;<a href=$sfile[list_hunt_view]?seq=$da[seq]&tcode=$tcode><font color=$SETPYO_CHARCOLOR>$da[title]</font></a>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[editdate]</font></td>
+	<td height='17' valign='middle'><p align='center'><font color=$SETPYO_CHARCOLOR>$HERFMEMOSTR</td>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[hit]</font></td>
+	</tr>
+");
+}//for
+//----------------------------------------------------------------------------------------------
+
+$STR="work_area=$work_area&work_kind=$work_kind&sex=$sex&experience_year=$experience_year&age=$age&tcode=$tcode";
+
+$move_total_page=ceil($total_page/$max_move); 
+$move_rest=$total_page % $max_move;		
+if($total_page < $max_move) $max_move=$total_page;  
+
+echo("
+</FORM></TABLE></DIV>
+<DIV align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=0><tr><td width=$SET_WIDTH_HUNT_LIST><p align=center><br>");		
+
+if($start > 1){	$page_prev=$start-1;		
+		$start_prev=$start - $max_move; 
+		print "<a href=$sfile[list_hunt]?$STR&page=1&start=1&tr=$tr>◁&nbsp;</a>";
+		print "<a href=$sfile[list_hunt]?$STR&page=$page_prev&start=$start_prev&tr=$tr>☜</a>";
+		}
+
+for($i=0;$i<$max_move;$i++){	//이동단추생성	
+		$page_button=$start+$i;		   
+		if($page_button<=$total_page){ //최대페이지수를 초과하지 않는다면..실행
+		if($page_button==$page){$color_1="<font color=green>"; $color_2="</font>";  $ahref_str1=""; $ahref_str2=""; }
+		else 
+		{$color_1=""; $color_2="";  $ahref_str1="<a href=$sfile[list_hunt]?$STR&page=$page_button&start=$start&tr=$tr>"; $ahref_str2="</a>"; }
+		print "$ahref_str1 $color_1 [$page_button] $color_2 $ahref_str2";
+		}
+		}
+
+if($total_page > ($start + $max_move -1)){ 		
+		$page_next=$start + $max_move; 
+		$start_next=$start + $max_move; 
+		print "<a href=$sfile[list_hunt]?$STR&page=$page_next&start=$start_next&tr=$tr>☞&nbsp;</a>";
+		print "<a href=$sfile[list_hunt]?$STR&page=$total_page&start=$total_page&tr=$tr>▷</a>";
+		}
+echo("
+</table>
+</div>
+<div align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_LIST height='30' valign='middle'><p align='center'>
+$LOGIN_STR
+</td>
+</tr>
+</table>
+</div>
+$setinfo_tail
+</BODY></HTML>
+");
+?>

@@ -1,0 +1,26 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_htmldel.phtml     (환경설정환경설정의 HTML강세삭제)
+include("inc_initarray.phtml"); 
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$QUE="
+			UPDATE $table_jelse[setup] 
+			SET $field=''
+		   ";
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+echo "<META http-equiv='refresh' content='0;url=$sfile[admin_se_tup]'>";
+?>

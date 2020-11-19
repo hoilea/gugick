@@ -1,0 +1,145 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//main_menu.phtml	(메인메뉴바)
+//==================================================================================
+
+if($HTTP_COOKIE_VARS[USER_COOKIE_OFFER]){	
+										 $TMPDB="guin_tmp"; 
+										 $TABLE="offer"; 
+									     $WHATEDIT=$sfile[mreg_offere];
+										 $IDMINE=trim($USER_COOKIE_OFFER);
+									 }else{
+										 $TMPDB="gugic_tmp"; 
+										 $WHATEDIT=$sfile[mreg_hunte];
+										 $IDMINE=trim($USER_COOKIE_HUNT);
+										 $TABLE="hunt"; 
+										 }
+//---------------------------------------------------------------------------
+
+if($HTTP_COOKIE_VARS[USER_COOKIE_OFFER] || $HTTP_COOKIE_VARS[USER_COOKIE_HUNT]){
+
+//if($HTTP_COOKIE_VARS[USER_COOKIE_REGNUM]){
+$LOGIN_LIST_ADMIN_STR=($USER_COOKIE_OFFER)?"<a href=$sfile[list_offer_admin]?db=guin_mem><font color=$setcolor_mtitlechar>구인등록글관리</font></a><img src=$ICON_POINT1 border=0>"
+																			:"<a href=$sfile[list_hunt_admin]?db=gugic_mem><font color=$setcolor_mtitlechar>구직등록글관리</font></a><img src=$ICON_POINT1 border=0>";
+//																			}//if
+$LOGIN_MEMOSTR="<a href=$sfile[memo_list_util]?modememoview=1><font color=$setcolor_mtitlechar>체크리스트</font></a><img src=$ICON_POINT1 border=0>";
+$LOGINOUTSTR="<a href=lo.phtml><font color=$setcolor_mtitlechar>로그아웃</font></a>&nbsp<font color=white>|</font>";
+$LOGIN_SFIND_STR="<a href=$WHATEDIT><font color=$setcolor_mtitlechar>회원정보</font></a><img src=$ICON_POINT1 border=0>";
+
+//구직자로그인가 구인자로그인인가 에따라 수신메세지 링크가 다르다.
+$LOGIN_MSG_STR=($HTTP_COOKIE_VARS[USER_COOKIE_OFFER])? "<a href=$sfile[tmp_list_offer]?db=$TMPDB&id_mine=$IDMINE&table=$TABLE><font color=$setcolor_mtitlechar>수신메세지($USER_COOKIE_MSGNUM)</a></font>"
+																 :"	<a href=$sfile[tmp_list_hunt]?db=$TMPDB&id_mine=$IDMINE&table=$TABLE><font color=$setcolor_mtitlechar>수신메세지($USER_COOKIE_MSGNUM)</a></font>";
+//$USER_COOKIE_NAME <- 로그인사용자의 이름값
+}
+else
+{
+//$LOGINOUTSTR="<a href=login_main_form.phtml><font color=$setcolor_mtitlechar>로그인</font></a>&nbsp";
+$LOGINOUTSTR="";
+}
+
+//ID , 암호저장 쿠키 존재 여부에 따라 체크박스 기본값 설정
+$ROMID_STR=($ROMID)?"checked":"";
+$ROMPASSWORD_STR=($ROMPASSWORD)?"checked":"";
+
+echo(" 
+$setinfo_head
+<HTML>
+<BODY text='black' link='blue' vlink='purple' alink='red' bottommargin='0' leftmargin='0' rightmargin='0' topmargin='0' marginheight='0' marginwidth='0'>
+<CENTER>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_mtitlebg width=800 height=20>
+<a href=$sfile[index2]><font color=$setcolor_mtitlechar>시작화면</font></a>&nbsp;<font color=white>|</font>
+$LOGINOUTSTR
+<a href=find_hunt.phtml><font color=$setcolor_mtitlechar>구직리스트검색</font></font></a>&nbsp; <font color=white>|</font> 
+<a href=find_offer.phtml><font color=$setcolor_mtitlechar>구인리스트검색</font></a>&nbsp;<font color=white>|</font> 
+<a href=admin_memrule.phtml?mode=mreg_hunt.phtml><font color=$setcolor_mtitlechar>구직회원가입</font></a>&nbsp; <font color=white>|</font>
+<a href=admin_memrule.phtml?mode=mreg_offer.phtml><font color=$setcolor_mtitlechar>구인회원가입</font></a>
+</td>
+</tr>
+<tr>
+<td bgcolor=$setcolor_mtitlebg2 width=800 height=20>
+");
+
+if(!$USER_COOKIE_HUNT && !$USER_COOKIE_OFFER && !$loginoption){
+echo("
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function guin_submit() {
+//-------------------------------
+document.mainmenu.part.value = 'guin';
+if(document.mainmenu.id.value == '')document.mainmenu.id.focus();
+if(document.mainmenu.id.value && document.mainmenu.password.value == '')document.mainmenu.password.focus();
+if(document.mainmenu.id.value && document.mainmenu.password.value)document.mainmenu.submit();
+}
+
+function gugic_submit() {
+//------------------------------
+document.mainmenu.part.value = 'gugic';
+if(document.mainmenu.id.value == '')document.mainmenu.id.focus();
+if(document.mainmenu.id.value && document.mainmenu.password.value == '')document.mainmenu.password.focus();
+if(document.mainmenu.id.value && document.mainmenu.password.value)document.mainmenu.submit();
+}
+
+function start_focus(){
+document.mainmenu.id.focus();
+}
+//-->
+</script>
+</HEAD>
+
+<BODY onLoad='start_focus()'>
+<FORM  name=mainmenu METHOD=post ACTION=$sfile[login_check]>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='0' width='800' class='text'>
+<tr>
+<td width=800 height=25 bgcolor=$setcolor_mtitlebg2>
+<FONT color=$setcolor_mtitlechar>&nbsp;ID</font><INPUT type=text name=id size=7 value=$ROMID>
+<FONT color=$setcolor_mtitlechar>암호</font><INPUT type=password name=password size=7 value=$ROMPASSWORD>
+<INPUT type=hidden name=work value='LOGIN'>
+<INPUT type=hidden name=part>
+<INPUT type=button value=구직 onClick='gugic_submit()'>
+<INPUT type=button value=구인 onClick='guin_submit()'>
+&nbsp;
+<input type=checkbox $ROMID_STR name=romid><FONT color=$setcolor_mtitlechar>ID</font>
+<input type=checkbox $ROMPASSWORD_STR name=rompassword><FONT color=$setcolor_mtitlechar>PW저장</font>
+</FORM>
+</td>
+</tr>
+</table>
+</div>
+");
+}
+echo("
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_offer]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+//-->
+</script>
+</HEAD>
+$LOGIN_LIST_ADMIN_STR	
+$LOGIN_SFIND_STR			
+$LOGIN_MEMOSTR				
+$LOGIN_MSG_STR				
+</td>
+</tr>
+</table>
+</div>
+</CENTER>
+</BODY>
+</HTML>
+");
+?>

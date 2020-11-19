@@ -1,0 +1,186 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//tmp_offer.phtml(구직리스트에서 회사에서 채용제의클릭시 채용제의서 작성)
+include("inc_initarray.phtml");
+include("./html_style.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT  company
+			FROM $table_mem[offer] 
+			WHERE id='$USER_COOKIE_OFFER'
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+//--------------------------------------------------------------------------
+
+
+
+echo("
+<html>
+<head>
+<meta http-equiv='content-type' content='text/html; charset=euc-kr'>
+<title>채용제의메세지작성</title>
+<link href='job.css' rel='stylesheet' type='text/css'>
+<SCRIPT language='JavaScript'>
+<!--
+//-------------------------------------------
+//주민번호체크및 빈칸체크------------------
+function isFilled( elm ) {
+if ( elm.value == '' || elm.value == null ) 
+return false;
+else
+return true;
+}
+
+//숫자/문자체크-------------------------
+function isInt( elm ) {
+var elmstr = elm.value + '';
+if ( elmstr == '' )
+return false;
+
+for ( var i=0; i<elmstr.length; i++ ) {
+if ( elmstr.charAt(i) < '0' || elmstr.charAt(i) > '9' )
+return false;
+}
+return true;
+}
+//-------------------------------------------
+
+function isReady( form ) {
+//-------------------------------------------
+if ( isFilled(document.form.name) == false ) {
+alert('담당자이름을 입력하세요!');
+document.form.name.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.email) == false ) {
+alert('담당자메일주소를 입력하세요!');
+document.form.email.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.tel) == false ) {
+alert('담당자연락처를 입력하세요!');
+document.form.tel.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.title) == false ) {
+alert('입사희망메세지 제목을 입력하세요!');
+document.form.title.focus();
+return false;
+}
+//-------------------------------------------
+}
+function start_focus(){
+document.form.name.focus();
+}
+//-->
+</SCRIPT></head>
+
+<BODY onLoad='start_focus()'>
+<form name='form' method='post' onsubmit='return isReady(form)' action='$sfile[tmp_offerw]'>
+<p align='center'><font color=$SETPYO_CHARCOLOR>채용제의메세지작성</font><br><br>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_SCOUT bgcolor=$SETOUTLINE_COLOR>
+
+<tr>
+<td bgcolor=white width='100' height='20'><p align='right'><font color=$SETPYO_CHARCOLOR>회사명</font></td>
+<td bgcolor=white width='500' height='20'><p>$da_mem[company]</td>
+</tr>
+
+<tr>
+<td bgcolor=white><p align='right'><font color=$SETPYO_CHARCOLOR>당당자이름</font></td>
+<td bgcolor=white height='17'><p align='left'>
+<input type='text' name='name' maxlength='10' size='13' class='colorbox' tabindex='1'> &nbsp;&nbsp;&nbsp;&nbsp;<font color=$SETPYO_CHARCOLOR>당당자메일</font>
+<input type='text' name='email' size='24' class='colorbox' tabindex='2'> &nbsp;&nbsp;&nbsp;&nbsp;<font color=$SETPYO_CHARCOLOR>연락처</font>
+<input type='text' name='tel' maxlength='14' size='18' class='colorbox' tabindex='3'>
+</td>
+</tr>
+
+<tr>
+<td bgcolor=white><p align='right'><font color=$SETPYO_CHARCOLOR>제목</font></td>
+<td bgcolor=white><p><input type='text' name='title' maxlength='30' size='86' class='colorbox' tabindex='3'></td>
+</tr>
+
+<tr>
+<td bgcolor=white><p align='right'><font color=$SETPYO_CHARCOLOR>내용</font></td>
+<td bgcolor=white><p align='left'>
+<textarea name='content' rows='20' cols='85' class='colorbox'>
+○주요업무
+────────────────────────────────────
+
+
+○근무지역
+────────────────────────────────────
+
+
+○연봉급여
+────────────────────────────────────
+
+
+○접수방법
+────────────────────────────────────
+
+
+○제출서류
+────────────────────────────────────
+
+
+
+</textarea>
+<br><br>
+<p align='center'>
+
+<input type=hidden name=id_mine value='$p'>
+<input type=hidden name=toemail value='$toemail'>
+<input type=hidden name=id_fk_offermem value='$USER_COOKIE_OFFER'>
+
+<input type='submit' value='입사제의메세지보냄'> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=button value='창닫기' onClick='self.close()'>
+</td>
+</tr>
+</table>
+</div>
+<br><br>
+<div align=center>
+<TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_SCOUT height='30' valign='middle'>
+<p align='center'><font color=$SETPYO_CHARCOLOR>작성하신 메세지는 구직자의 E-메일($toemail)에도 전송됩니다.
+</td>
+</tr>
+</table>
+</div>
+</form>
+</body>
+</html>
+");
+?>

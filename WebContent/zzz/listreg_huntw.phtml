@@ -1,0 +1,123 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//listreg_huntw.phtml (구직리스트등록DB저장)
+include("./inc_initarray.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+
+//Str_Plus($delimiter,$origin_str,$plus_str);				//$origin_str.#.$plus_str 리턴
+//Exist_Str($origin_str,$search_str);							//$origin_str 문자열(1#2)에서 $search_str(1)이 있으면 1 없으면 0
+//----------------------------------------------------------------------------------------------------
+function Str_Plus($delimiter,$origin_str,$plus_str){
+			$return_str=(!$origin_str) ? $plus_str : $origin_str.$delimiter.$plus_str;
+			return $return_str;
+			}
+
+//---------------------------------------------------------------------------------------------------
+function Exist_Str($delimiter,$origin_str,$search_str){
+			$returnvalue=0;
+			$comparray=explode($delimiter,$origin_str);
+			for($i=0;$i<count($comparray);$i++){			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+			if($comparray[$i]==$search_str)$returnvalue=1;
+			}
+			return $returnvalue;
+			}
+//---------------------------------------------------------------------------
+
+$content=($content_new_yesno)?$contentnew:"010";
+
+//근무희망업종 및 희망지역 문자열 만들기 #1#2#3#----------------------------------------------------
+
+if(count($work_class) > 5)Err_Msg("구인업종은 5개까지 선택가능합니다.");
+if(count($work_class) < 1)Err_Msg("구인업종은 하나이상 선택해야 합니다.");
+
+if(count($work_area) > 4)Err_Msg("근무지역은 5개까지 선택가능합니다.");
+if(count($work_area) < 1)Err_Msg("근무지역은 하나이상 선택해야 합니다.");
+
+for($i=0;$i<count($work_class);$i++){
+													$class_str=$class_str."#".$work_class[$i];
+													}
+													$work_class=$class_str."#";
+														
+for($i=0;$i<count($work_area);$i++){
+													$area_str=$area_str."#".$work_area[$i];
+													}
+													$work_area=$area_str."#";
+//구직리스트테이블에 저장
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+
+//수정모드이면 수정작업만 하고 종료
+if($edit_mode){
+					$QUE="
+					UPDATE $table_hunt[$tcode] 
+					SET experience_year='$experience_year', 
+						   salary_year='$salary_year', 
+						   salary_monthly='$salary_monthly', 
+						   work_kind='$work_kind',
+						   work_class='$work_class',
+						   work_area='$work_area',
+						   title='$title',
+						   content='$content', 
+						   editdate=CURDATE()
+				    WHERE seq = $seq
+						   ";
+
+					//echo $QUE;exit;
+					$RESULT=mysql_query($QUE) or die(mysql_error($TC));	
+					echo "<META http-equiv='refresh' content='0;url=$sfile[index]'>";
+					exit;
+					}
+
+
+
+$QUE="
+		INSERT INTO $table_hunt[$tcode] VALUES('', '$USER_COOKIE_HUNT', '$sex', '$age', '$experience_year', '$salary_year', '$salary_monthly', '$work_kind',
+		'$work_class','$work_area', '$title','$content', CURDATE(),'1')
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+
+
+//구직회원테이블에 리스트등록정보문자열불러오기
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+$QUE="SELECT listinfo FROM $table_mem[hunt] WHERE id = '$USER_COOKIE_HUNT'";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+$origin_str=mysql_result($RESULT,0,0);
+
+$existvalue=Exist_Str("#",$origin_str,$tcode);//이미 존재하는 테이블인지 조사
+
+
+if(!$existvalue){	//새로운 테이블 일때만 $listinfo 문자열뒤에 현재등록정보 붙히기
+//------------------------------------------------------------------------
+$listinfo=Str_Plus("#",$origin_str,$tcode);
+//echo $listinfo;
+$QUE="UPDATE $table_mem[hunt] SET listinfo='$listinfo' WHERE id = '$USER_COOKIE_HUNT'";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+}
+echo("<META http-equiv='refresh' content='0;url=$sfile[list_hunt]?tcode=$tcode&work_area=99&work_kind=99&sex=99&experience_year=99&age=99'>");
+?>

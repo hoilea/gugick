@@ -1,0 +1,678 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//inc_initarray.phtml (각 업종별 테이블 배열정보및 스크립트명배열 INC화일)
+include("inc_dbinit.phtml");		//DB설정
+
+//DB명배열
+$dfile=array(
+			"guin_list"			=>$SBROAD_DBNAME,
+			"gugic_list"			=>$SBROAD_DBNAME,
+	
+			"guin_mem"		=>$SBROAD_DBNAME,
+			"gugic_mem"		=>$SBROAD_DBNAME,
+
+			"guin_tmp"			=>$SBROAD_DBNAME,
+			"gugic_tmp"		=>$SBROAD_DBNAME,
+
+			"jelse"				=>$SBROAD_DBNAME
+			);
+
+//등록글레벨수정/우펴번호/기타테이블
+$table_jelse=array(
+									"level"	=>	 "jelse_level_table",
+									"setup"	=>	 "jelse_setup_table",
+									"post"	=>	 "sp_post_table"
+						);	
+
+
+
+//구인/구직회원테이블명 배열
+$table_mem=array(
+									"hunt"=>"hunt_member_table",
+									"offer"=>"offer_member_table"
+						);	
+
+
+//구직/구인 채용/입사제의 테이블명 배열
+$table_tmp=array(
+									"hunt"=>"hunt_temp_table",
+									"offer"=>"offer_temp_table"
+						);
+
+
+//스크립트명배열
+$sfile=array(
+			"find_offer"						=>"find_offer.phtml",
+			"find_hunt"						=>"find_hunt.phtml",
+	
+			"list_offer"						=>"list_offer.phtml",
+			"list_hunt"						=>"list_hunt.phtml",
+
+			"listreg_offer"					=>"listreg_offer.phtml",
+			"listreg_hunt"					=>"listreg_hunt.phtml",
+
+			"listreg_offerw"				=>"listreg_offerw.phtml",
+			"listreg_huntw"				=>"listreg_huntw.phtml",
+
+			"tmp_offer"						=>"tmp_offer.phtml",
+			"tmp_hunt"						=>"tmp_hunt.phtml",
+	
+			"tmp_offerw"					=>"tmp_offerw.phtml",
+			"tmp_huntw"					=>"tmp_huntw.phtml",
+
+			"tmp_list_hunt"				=>"tmp_list_hunt.phtml",
+			"tmp_list_offer"				=>"tmp_list_offer.phtml",
+
+			"tmp_list_view_hunt"		=>"tmp_list_view_hunt.phtml",
+			"tmp_list_view_offer"		=>"tmp_list_view_offer.phtml",
+
+			"tmp_list_view_co"			=>"tmp_list_view_co.phtml",	
+
+			"tmp_list_del_hunt"			=>"tmp_list_del_hunt.phtml",
+			"tmp_list_del_offer"			=>"tmp_list_del_offer.phtml",
+
+			"list_hunt_admin"				=>"list_hunt_admin.phtml",
+			"list_offer_admin"				=>"list_offer_admin.phtml",
+			"list_hunt_admin_del"		=>"list_hunt_admin_del.phtml",
+			"list_offer_admin_del"		=>"list_offer_admin_del.phtml",
+			"list_hunt_admin_root"		=>"list_hunt_admin_root.phtml",
+			"list_offer_admin_root"		=>"list_offer_admin_root.phtml",
+
+			"mreg_offer"					=>"mreg_offer.phtml",
+			"mreg_hunt"					=>"mreg_hunt.phtml",
+
+			"mreg_offerw"					=>"mreg_offerw.phtml",
+			"mreg_huntw"					=>"mreg_huntw.phtml",
+
+			"login_check"					=>"login_check.phtml",
+			"index"							=>"index2.phtml",
+			"indexhtml"						=>"index.html",
+
+			"login_check_window"		=>"login_check_window.phtml",
+			"login_form_gugic"			=>"login_form_gugic.phtml",
+			"login_form_guin"			=>"login_form_guin.phtml",
+			"login_main_form"			=>"login_main_form.phtml",
+
+			"list_hunt_view"				=>"list_hunt_view.phtml",
+			"list_offer_view"				=>"list_offer_view.phtml",
+
+			"list_offer_view_co"			=>"list_offer_view_co.phtml",
+
+			"search"						=>"search.phtml",
+			"search_list_hunt"			=>"search_list_hunt.phtml",
+			"search_list_offer"			=>"search_list_offer.phtml",
+			"lo"								=>"lo.phtml",
+
+			"mreg_hunte"					=>"mreg_hunte.phtml",
+			"mreg_offere"					=>"mreg_offere.phtml",
+
+			"listreg_hunte"				=>"listreg_hunte.phtml",
+			"listreg_offere"				=>"listreg_offere.phtml",
+
+			"admin_level_view_hunt"	=>"admin_level_view_hunt.phtml",
+			"admin_level_apply_hunt"	=>"admin_level_apply_hunt.phtml",			
+
+			"admin_level_view_offer"	=>"admin_level_view_offer.phtml",
+			"admin_level_apply_offer"	=>"admin_level_apply_offer.phtml"	,
+
+			"memo_list"					=>"memo_list.phtml",
+			"memo_list_del"				=>"memo_list_del.phtml",
+			"memo_list_util"				=>"memo_list_util.phtml",	
+			"memo_list_hunt_view"	 	=>"memo_list_hunt_view.phtml",
+			"memo_list_offer_view"		=>"memo_list_offer_view.phtml",
+
+			"member_list_hunt"			=>"member_list_hunt.phtml",
+			"member_mreg_hunte"		=>"member_mreg_hunte.phtml",	
+			"member_mreg_huntw"		=>"member_mreg_huntw.phtml",	
+			"member_list_hunt_del"	=>"member_list_hunt_del.phtml",
+
+			"member_list_offer"			=>"member_list_offer.phtml",
+			"member_mreg_offere"		=>"member_mreg_offere.phtml",
+			"member_mreg_offerw"		=>"member_mreg_offerw.phtml",
+			"member_list_offer_del"	=>"member_list_offer_del.phtml",
+			
+			"admin_main"					=>"admin_main.phtml",
+			"admin_menu"					=>"admin_menu.phtml",
+			"admin_start_list"				=>"admin_start_list.phtml",
+
+			"post_search_hunt"			=>"post_search_hunt.phtml",
+			"post_search_offer"			=>"post_search_offer.phtml",
+
+			"search_id_hunt"				=>"search_id_hunt.phtml",
+			"search_id_offer"				=>"search_id_offer.phtml",
+
+			"admin_se_tup"				=>"admin_se_tup.phtml",
+			"admin_se_tupw"			=>"admin_se_tupw.phtml",
+			"admin_memrule"			=>"admin_memrule.phtml",
+			"admin_htmldel"				=>"admin_htmldel.phtml",
+			"admin_mail"					=>"admin_mail.phtml",
+			"admin_searchcode"		=>"admin_searchcode.phtml"
+		);
+
+/*
+find_offer.phtml					구인검색메인화면
+find_hunt.phtml					구직검색메인화면
+
+list_offer.phtml						구인란검색하여출력
+list_hunt.phtml						구직란검색하여출력
+
+listreg_hunt.phtml				구직리스트에등록
+listreg_offer.phtml				구인리스트에등록
+
+listreg_huntw.phtml				구직리스트에DB저장
+listreg_offerw.phtml				구인리스트에DB저장
+
+list_hunt_admin.phtml			구직회원의 구직글 관리
+list_offer_admin.phtml			구인회원의 구인글 관리
+
+mreg_offer.phtml					구인회원가입작성폼
+mreg_offerw.phtml				구인회원저장
+
+mreg_hunt.phtml					구직회원가입작성폼
+mreg_huntw.phtml				구직회원저장
+
+tmp_offer.phtml					채용제의메시지작성폼
+tmp_offerw.phtml					채용제의메시지저장
+
+tmp_hunt,phtml					입사희망메세지작성폼
+tmp_huntw.phtml					입사희망메시지저장
+
+tmp_list_hunt.phtml				수신메세지리스트보이기(구직자가로그인할때보임)
+tmp_list_offer.phtml				수신메세지리스트보이기(구인자가로그인할때보임)
+tmp_list_view_hunt.phtml		수신메세지자세히보기(구직)
+tmp_list_view_offer.phtml		수신메세지자세히보기(구인)
+
+tmp_list_view_co.phtml			(구직회원이볼때)수신메세지리스트내용보기중 회사정보
+
+tmp_list_del_hunt.phtml			(구직회원)수신메세지리그트선택삭제루틴
+tmp_list_del_offer.phtml			(구인회원)수신메세지리그트선택삭제루틴
+
+list_hunt_admin_del.phtml		구직회원의 등록글 리스트
+list_offer_admin_del.phtml		구인회원의 등록글 리스트
+
+inc_dbinit.phtml					DB유저/메일서버설정/환경설정
+inc_initarray.phtml				스크립트화일들배열
+inc_checknum.phtml			업종분류확장시사용될업종수
+inc_phplib.phtml					프로그램라이브러리모음
+
+index.phtml							인덱스화일
+
+list_hunt_view.phtml				구인리스트에서 구직자 상세정보 보기
+list_offer_view.phtml				구직리스트에서 구인자 상세정보 보기
+
+list_offer_view_co.phtml		구인리스트에서 등록글 볼때 회사정보 보기
+
+
+login_check.phtml				초기메인메뉴에서의 로그인 실행
+login_check_window.phtml	로그인없이 기능사용시 로그인 실행
+
+login_form_gugic.phtml			구직회원로그인폼	
+login_form_guin.phtml			구인회원로그인폼
+login_main_form.phtml			메인로그인폼(구인구직모두)
+
+lo.phtml								로그아웃
+search.html						빠른검색/자격증검색
+search_list_hunt.phtml			검색하여추출된 구직자료리스트보이기
+search_offer_hunt.phtml		검색하여추출된 구인자료리스트보이기
+
+mreg_hunte.phtml				구직회원정보수정
+mreg_offere.phtml				구인회원정보수정
+
+listreg_hunte.phtml				구직등록리스트수정
+listreg_offere.phtml				구인등록리스트수정
+
+admin_main.phtml				운영자모드로그인하기		
+admin_menu.phtml				운영자모드메뉴	
+admin_level_view_hunt.phtml	등록글레벨조정하기(구직)
+admin_level_apply_hunt.phtml	등록글레벨저장하기(구직)
+admin_start_list.phtml				시작목록관리
+
+admin_level_view_offer.phtml	등록글레벨조정하기(구인)
+admin_level_apply_offer.phtml	등록글레벨조정하기(구인)
+
+memo_list.phtml						메모리스트관리창
+memo_list_util.phtml					메모리스트관리페이지
+memo_list_hunt_view.phtml		메모리스트중특정자료내용보기(구직)
+memo_list_offer_view.phtml		메모리스트중특정자료내용보기(구인)
+
+member_list_hunt.phtml			구직회원관리
+member_mreg_hunte.phtml		구직회원관리모드에서회원수정폼
+member_mreg_huntw.phtml		구직회원관리모드에서회원수정->저장
+member_list_hunt_del.phtml		구직회원관리모드에서회원삭제
+
+member_list_offer.phtml			구인회원관리
+member_mreg_offere.phtml		구인회원관리모드에서회원수정폼
+member_mreg_offerw.phtml		구인회원관리모드에서회원수정->저장
+member_list_offer_del.phtml		구인회원관리모드에서회원삭제
+
+post_search_hunt.phtml			구직회원등록시우편번호입력기
+post_search_offer.phtml			구인회원등록시우편번호입력기
+search_id_hunt.phtml				구직ID중복검사	
+search_id_offer.phtml				구인ID중복검사
+
+admin_se_tup.phtml				환경설정
+admin_se_tupw.phtml				환경설정저장
+admin_memrule.phtml				회원가입약관화면
+admin_htmldel.phtml				환경설정의 HTML강세삭제	
+admin_mail.phtml					전체메일	
+admin_searchcode.phtml			등록글코드로해당등록글정보보기	
+
+list_hunt_admin_root.phtml		특정회원의구직등록글리스트에 운영자가 접근
+list_offer_admin_root.phtml		특정회원의구인등록글리스트에 운영자가 접근
+
+*/
+//------------------------------------------------------------------------------
+
+//마감년도선택배열
+$STR_year=array(
+						"2000",
+						"2001",
+						"2002",
+						"2003",
+						"2004",
+						"2005",
+						"2006",
+						"2007",
+						"2008",
+						"2009",
+						"2010",
+						"2011"
+						); //필히 12개년도를 입력해놓아야 한다.
+
+//성별
+$STR_sex=array(			
+						"무관",
+						"남",
+						"여"
+						);
+//상장여부
+$STR_merit_yes_no=array(
+								"비상장",
+								"상장"
+									);
+
+//근무형태배열
+$STR_work_kind=array(
+								"무관",
+								"정규직",
+								"비정규직",
+								"아르바이트"
+								);
+
+//회사규모배열
+$STR_scale=array(
+								"대기업",
+								"중소기업",
+								"밴처기업",
+								"자영업",
+								"프리랜서"
+								);
+
+//구직회원등록시최종학력배열
+$STR_educational_last=array(
+									"",
+									"초등학교졸업",
+                                    "중학교졸업",
+                                    "고등학교졸업",
+									"대학교졸업(2년)",
+                                    "대학교졸업(4년)",
+                                    "대학원졸업"
+								);
+
+
+//구인리스트등록시최종학력배열
+$STR_guin_educational_last=array(
+									"무관",
+									"초등학교졸업",
+                                    "중학교졸업",
+                                    "고등학교졸업",
+									"대학교졸업(2년)",
+                                    "대학교졸업(4년)",
+                                    "대학원졸업"
+								);
+
+
+//근무지역배열
+$STR_work_area=array(
+									"서울",
+									"경기",
+									"인천",
+									"강원",
+									"대전",
+									"충남",
+									"충북",
+									"전북",
+									"전남",
+									"광주",
+									"경북",
+									"경남",
+									"대구",
+									"울산",
+									"부산",
+									"제주",
+									"아시아",
+									"아프리카",
+									"중남미",
+									"오세아니아",
+									"유럽",
+									"북미"
+									);
+
+
+
+// 남자(1)-여자(2)
+//서울(0)~
+
+//경력선택배열
+$STR_experience_year=array(
+									"경력년수무관",
+									"신입",
+			                        "1개월",
+							        "3개월",
+									"6개월",
+						            "1년",
+									"2년",
+									"3년",
+									"4년",
+									"5년",
+									"6년",
+									"7년",
+									"8년",
+									"9년",
+									"10년",
+									"15년",
+									"20년",
+									"25년",
+									"30년"
+									);
+//------------------------------------------------
+//경력제한(구인등록/수정시)
+$STR_experience_year_offer=array(
+									"경력년수무관",
+									"1개월",
+							        "3개월",
+									"6개월",
+						            "1년",
+									"2년",
+									"3년",
+									"4년",
+									"5년",
+									"6년",
+									"7년",
+									"8년",
+									"9년",
+									"10년",
+									"15년",
+									"20년",
+									"25년",
+									"30년"
+									);
+
+//경력제한(구인등록시 무관-신입-경력)
+$STR_experience_year_radio=array(
+									"무관",
+									"신입",
+							        "경력"
+									);
+//------------------------------------------------
+
+//연봉선택배열
+$STR_salary_year=array(
+									"",
+									"면접후결정",
+									"700~1000",
+								    "1000~1200",
+									"1200~1500",
+									"1500~2000",
+									"2000~2500",
+									"2500~3000",
+									"3000~3500",
+									"3500~4000",
+									"4000~6000",
+									"6000~9000",
+									"9000이상"
+								);
+
+
+ 
+//-------------------------------------------------------------------------------
+//업종별분류테이블제목배열
+
+$table_title=array(
+"건설/토목/건축/조경",
+"광고(기획/홍보/영업/제작)",
+"교육/강사/학원",
+"농업/수산업/축산업/광업",
+"기계/자동차/금속", 
+"관광/호텔/여행/항공",
+"금융기관(은행/금고/증권/보험)",
+"건강/병원/의약/화장품",
+"공공기관/공사/공공서비스/협회",
+"방송/언론",
+"출판/인쇄/편집",
+"목재/제지",
+"유통/운송/음식료",
+"석유/화학/에너지",
+"섬유/의류/패션",
+"전기/전자/컴퓨터",
+"용역/기타서비스",
+
+"임원",
+"아르바이트",
+"병역특례",
+"프리랜서",
+"자원봉사",
+"장애인",
+"고령인",
+"노무직",
+ 
+
+"경리/회계/재무",
+"마케팅/영업(국내)",
+"무역/영업(해외)",
+"사무직(기획/총무/인사/자재/구매/비서)",
+
+"법률/특허",
+"증권",
+"번역/통역",
+"세무/회계",
+"공인중개사/부동산",
+"통계/수리",
+"감정평가",
+"경매관리",
+"경영지도/경영분석",
+"인테리어/실내디자인",
+"의상/패션디자인/코디네이터",
+"이벤트/레크레이션",
+"비디오촬영/카메라",
+"미용",
+"서적/소설/시/만화/작가",
+
+"생산관리/생산직/기능직",
+"기술/연구개발",
+
+"웹마스터/네트워크/서버구축관리",
+"웹프로그램/컨텐츠/개발",
+"웹디자인",
+"데이타베이스",
+"웹마케팅/영업/ 정보제공/기획",
+"몰마스터/쇼핑자키/샵바인더/정보검색",
+
+"전산/프로그래머",
+"통신기술/기술영업", 
+"시스템분석/하드웨어/설계",
+ 
+"편집디자인/MAC편집",
+"제품/산업디자인",
+"CAD/CAM",
+"캐릭터/에니메이션/그래픽디자인"
+);
+
+ 
+
+ 
+
+ 
+
+
+ 
+
+
+//-------------------------------------------------------------------------------
+//[구인]업종별분류테이블명배열
+
+$table_offer=array(
+		"offer_main_construction",	
+		"offer_main_advertise",
+		"offer_main_education",
+		"offer_main_country",	
+		"offer_main_metal",	
+		"offer_main_travel",			
+		"offer_main_finance",	
+		"offer_main_health",
+		"offer_main_publicinstitution",
+		"offer_main_broadcast",			
+		"offer_main_press",
+		"offer_main_wood",
+		"offer_main_decirculation",
+		"offer_main_energy",		
+		"offer_main_fiber",
+		"offer_main_electronic",
+		"offer_main_else",			
+			
+
+		"offer_else_manager",
+		"offer_else_parttimejob",
+		"offer_else_armyexception",
+		"offer_else_freelance",
+		"offer_else_volunteer",
+		"offer_else_hindman",
+		"offer_else_advancedage",
+		"offer_else_labor",
+
+		"offer_office_accounts",
+		"offer_office_marketing",
+		"offer_office_merchant",
+		"offer_office_officework",
+
+		"offer_expert_law",
+		"offer_expert_bill",
+		"offer_expert_translation",
+		"offer_expert_taxationbusiness",
+		"offer_expert_estate",
+		"offer_expert_statistics",
+		"offer_expert_estimate",
+		"offer_expert_auction",
+		"offer_expert_management",
+		"offer_expert_indoordesign",	
+		"offer_expert_dressdesign",
+		"offer_expert_event",	
+		"offer_expert_photographing",
+		"offer_expert_beautyculture",
+		"offer_expert_writer",
+
+
+		"offer_skill_product",
+		"offer_skill_study",
+
+		"offer_web_webmaster",
+		"offer_web_webprogramming",
+		"offer_web_webdesign",
+		"offer_web_webdatabase",
+		"offer_web_webmarketing",
+		"offer_web_webelse",
+
+		"offer_computer_programming",
+		"offer_computer_communication",
+		"offer_computer_systemhardware",
+
+		"offer_design_edit",
+		"offer_design_industry",
+		"offer_design_cadcam",
+		"offer_design_graphics"
+		);
+
+
+//[구직]업종별분류테이블기본배열
+
+$table_hunt=array(
+	
+		"hunt_main_construction",	
+		"hunt_main_advertise",
+		"hunt_main_education",
+		"hunt_main_country",	
+		"hunt_main_metal",	
+		"hunt_main_travel",			
+		"hunt_main_finance",	
+		"hunt_main_health",
+		"hunt_main_publicinstitution",
+		"hunt_main_broadcast",			
+		"hunt_main_press",
+		"hunt_main_wood",
+		"hunt_main_decirculation",
+		"hunt_main_energy",		
+		"hunt_main_fiber",
+		"hunt_main_electronic",
+		"hunt_main_else",			
+			
+
+		"hunt_else_manager",
+		"hunt_else_parttimejob",
+		"hunt_else_armyexception",
+		"hunt_else_freelance",
+		"hunt_else_volunteer",
+		"hunt_else_hindman",
+		"hunt_else_advancedage",
+		"hunt_else_labor",
+
+
+
+
+		"hunt_office_accounts",
+		"hunt_office_marketing",
+		"hunt_office_merchant",
+		"hunt_office_officework",
+
+		"hunt_expert_law",
+		"hunt_expert_bill",
+		"hunt_expert_translation",
+		"hunt_expert_taxationbusiness",
+		"hunt_expert_estate",
+		"hunt_expert_statistics",
+		"hunt_expert_estimate",
+		"hunt_expert_auction",
+		"hunt_expert_management",
+		"hunt_expert_indoordesign",	
+		"hunt_expert_dressdesign",
+		"hunt_expert_event",	
+		"hunt_expert_photographing",
+		"hunt_expert_beautyculture",
+		"hunt_expert_writer",
+
+
+		"hunt_skill_product",
+		"hunt_skill_study",
+
+		"hunt_web_webmaster",
+		"hunt_web_webprogramming",
+		"hunt_web_webdesign",
+		"hunt_web_webdatabase",
+		"hunt_web_webmarketing",
+		"hunt_web_webelse",
+
+		"hunt_computer_programming",
+		"hunt_computer_communication",
+		"hunt_computer_systemhardware",
+
+		"hunt_design_edit",
+		"hunt_design_industry",
+		"hunt_design_cadcam",
+		"hunt_design_graphics"			
+			);
+?>

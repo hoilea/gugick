@@ -1,0 +1,207 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+/*
+Dbl_Connect($dbname,$id,$password,$host="localhost");						//DB연결
+Down_Load($down_file_path);																//화일다운로드
+Run_Url($url_path,$wait);																		//url이동
+Err_Msg_Url($string,$url);																		//메세지박스를보인후 입력url로 이동
+Err_Loc($url);																						//url이동
+Err_Msg($string);																				//메세지를보인후뒤로이동
+Self_Close();																						//현재페이지닫기
+Go_Button($name,$value,$str);																	
+Email($to,$subject, $msg,$from,$MAILER="/usr/sbin/sendmail -t  -ba");	//메일전송
+ListDir($base_dir,$ext="*"); //ex) $dir=ListDir("/usr/a/sp","*.gif");			//화일-디렉토리 배열리턴				$dir[0][$i] <=화일배열 $dir[1][$i] <=디렉토리배열
+File2ExplodeStr($filename,$delimiter="[:]");											//화일을읽어구별문자별배열리턴	$str=File2ExplodeStr("/usr/a/school/w.txt","|");
+Get_Age($yyyy);																					//생년월일을 나이로 바꾸기	
+
+Array_Plus($delimiter,$origin_str,$plus_str);											//배열문자열을 #로 묶고 $plus_str붙이고 리턴 ("#","a[]","addstr"); => 1#2#addstr 
+Str_Plus($delimiter,$origin_str,$plus_str);												//$origin_str.#.$plus_str 리턴
+Str_Minus($delimiter,$origin_str,$minus_int);											//$origin_str 문자열에서 $minus_int 번째값제거 1#2#3  -> 1#3
+
+Num_Str($str,$delimiter);																		//문자열에서 특정문자 갯수 구하기
+
+Exist_Str($delimiter,$origin_str,$search_str);															//$origin_str 문자열(1#2)에서 $search_str(1)이 있으면 1 없으면 0
+Self_Close();																						//화면닫기
+*/
+
+//--------------------------------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die("접속불가");
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die("접속불가");
+return $table_connect;
+}
+//--------------------------------------------------------------------------------------------------
+function Down_Load($down_file_path){
+if(!file_exists($down_file_path))Err_Msg("화일이 존재하지 않습니다..게시판에 신고 바랍니다");
+$filename=basename($down_file_path);
+Header("Content-Type: application/octet-stream");     
+Header("Content-Length: ".filesize($down_file_path));
+Header("Content-Disposition: attachment; filename=$filename");      //받는쪽의 기본화일명
+readfile($down_file_path);
+}
+//----------------------------------------------------------------------------------------------------
+function Run_Url($url_path,$wait){
+echo("
+<META http-equiv='refresh' content='$wait;url=$url_path'>
+");
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg_Url($string,$url){ //메세지 보이고 해당 URL로 이동
+echo("
+<script>
+<!--
+alert('$string');
+//-->
+</script>
+");
+Run_Url("$url",0);
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Loc($url){
+echo("
+<script>
+<!--
+location.href='$url'
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Self_Close(){
+echo("
+<script>
+<!--
+self.close();
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Go_Button($name,$value,$str){   //$name=> 모드분류  $valuse=>모드작업분류  $str=> 버튼글자
+global $PHP_SELF;
+echo("
+<center>
+<form action=$PHP_SELF method=post>
+<input type=hidden name=$name value=$value>
+<input type=submit value=$str>
+</form>
+</center>
+");
+}
+//----------------------------------------------------------------------------------------------------
+function Self_Close(){
+echo("
+<script>
+<!--
+self.close();
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+function Get_Age($yyyy){
+$current_date=date( "Y", time() );
+$AGE=$current_date-(int)$yyyy; //년도로 나이구하기
+return $AGE;
+}
+//----------------------------------------------------------------------------------------------------
+function Array_Plus($delimiter,$origin_str,$plus_str){
+			$return_str  = implode($delimiter,$origin_str).$delimiter.$plus_str;
+			return $return_str;
+			}
+//----------------------------------------------------------------------------------------------------
+function Str_Plus($delimiter,$origin_str,$plus_str){
+			$return_str=(!$origin_str) ? $plus_str : $origin_str.$delimiter.$plus_str;
+			return $return_str;
+			}
+//----------------------------------------------------------------------------------------------------
+function Str_Minus($delimiter,$origin_str,$minus_int){
+			$strarray=explode("#",$origin_str);
+			for($i=0;$i<count($strarray);$i++){
+			if($i != $minus_int)$minus_str = $minus_str.$strarray[$i].$delimiter;
+			}
+			$return_str = substr($minus_str,0,-1);
+			return $return_str;
+			}
+//----------------------------------------------------------------------------------------------------
+function Num_Str($delimiter,$str){
+			$num=count(explode($delimiter,$str))-1;
+			return $num;
+			}
+//---------------------------------------------------------------------------------------------------
+function Exist_Str($delimiter,$origin_str,$search_str){
+			$returnvalue=0;
+			$comparray=explode($delimiter,$origin_str);
+			for($i=0;$i<count($comparray);$i++){			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+			if($comparray[$i]==$search_str)$returnvalue=1;
+			}
+			return $returnvalue;
+			}
+//----------------------------------------------------------------------------------------------------
+function email($to,$subject, $msg,$from,$MAILER="/usr/sbin/sendmail -t  -ba") 
+{ 
+$header = sprintf("From: %s\nTo: %s\nSubject: %s\n",$from,$to,$subject); 
+$fp =popen($MAILER,"w"); 
+fputs($fp,$header); 
+fputs($fp,"$msg\n"); 
+pclose($fp); 
+} 
+//----------------------------------------------------------------------------------------------------
+function ListDir($base_dir,$ext="*"){ //ex) $dir=ListDir("/usr/a/sp","*.gif");
+						chdir($base_dir);
+						$fp=popen("ls $ext","r");
+						while(!feof($fp)){
+									$line=fgets($fp,80);
+									$f_name=trim($line);
+									if(is_dir($f_name)){
+													     		$dirname[1][]=$f_name;
+															  }else{$dirname[0][]=$f_name;}
+									}//while;
+	pclose($fp);
+	return $dirname;
+}
+//----------------------------------------------------------------------------------------------------
+function File2ExplodeStr($filename,$delimiter="[:]"){
+			$readstr= file($filename);
+			for($i=0;$i<count($readstr);$i++)$buffer.=$readstr[$i];
+			$explode_returnstr=explode($delimiter,$buffer);
+			return $explode_returnstr;
+			}
+/*----------------------------------------------------------------------------------------------------
+$source = "1-123-123-123-000"; 
+echo substr($source,0,-strlen(strrchr($source,"-"))); 
+
+//강화된쿠키로그인
+//----------------------------------------------------------------------------------------------------
+setcookie("cookie_global_user","$id$password");	//사용자로그인쿠키변수를 알아내기위한 전역쿠키변수
+setcookie("$id$password",$id);							//쿠키변수명			
+
+if(${$cookie_global_user}){									//전역쿠키변수의 내용값에 해당하는 $id$password 쿠키가 화성화 되어 있으면 로그인허가
+				echo "로그인성공";
+				 }
+//--------------------
+$current_date=date( "Ymd", time() );  ----> 20001123
+
+*/

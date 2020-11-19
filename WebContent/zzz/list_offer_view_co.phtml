@@ -1,0 +1,149 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_offer_view.phtml(구인리스트에서 제목클릭시 내용보이기)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//-------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT  id_fk_offermem	
+			FROM $table_offer[$tcode] 
+			WHERE seq=$seq
+			";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_guin = mysql_fetch_array($RESULT);   //구직리스트의 내용읽기
+
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT  company, captain_name, captain_tel, fax, email, homepage, juso_num, juso, establish_year, merit_yes_no, scale,member, funds, business_title, content
+			FROM $table_mem[offer] 
+			WHERE id='$da_guin[id_fk_offermem]'
+		";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+//----------------------------------------------------------------
+
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//------------------------
+$NUM_scale=$da_mem[scale];
+$NUM_merit_yes_no=$da_mem[merit_yes_no];
+//------------------------
+
+//회사소개
+//----------------------------------------------------------
+$da_mem[content]=nl2br($da_mem[content]); //\n을 -> <br>로
+$da_mem[content]=eregi_replace(" ","&nbsp;",$da_mem[content]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+
+
+echo("
+<HTML>
+<BODY>
+<title>회사상세정보</title>
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW_CO bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='100' height='20'<p align='center'><font color=$SETPYO_CHARCOLOR><b>회사명</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='200' height='20'<p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[company]</font></td>
+<td bgcolor=$setcolor_ctitle width='100' height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>회사규모</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='200' height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_scale[$NUM_scale]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>대표이름</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[captain_name]</a></font>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>상장여부</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_merit_yes_no[$NUM_merit_yes_no]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>대표전화</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[captain_tel]</a></font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>설립연도</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[establish_year]년</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>팩스</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[fax]</a></font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>자본금</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[funds]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>메일</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><a href=mailto:$da_mem[email]><font color=$SETPYO_CHARCOLOR><u>$da_mem[email]</u></font></a></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>직원수</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[member]명</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>홈페이지</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width=500 height='17' valign='bottom' colspan='3'><p><a href=$da_mem[homepage] target=blank><font color=$SETPYO_CHARCOLOR><u>$da_mem[homepage]</u></font></a></td>
+</tr>
+
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>사업모델</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width=500 height='17' valign='bottom' colspan='3'><p><font color=$SETPYO_CHARCOLOR>$da_mem[business_title]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='20'<p align='center'><font color=$SETPYO_CHARCOLOR><b>주소</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width=500  height='20' colspan='3'><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[juso]  &nbsp;&nbsp; $da_mem[juso_num]</font></td>
+</tr>
+
+</TABLE></DIV>
+
+<br><br>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW_CO bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=white width=$SET_WIDTH_OFFER_VIEW_CO valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<p align='right'><input type=button value='창닫기' onClick='self.close()'>
+</tr>
+</TABLE></DIV>
+<br><br>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW_CO bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=white width=$SET_WIDTH_OFFER_VIEW_CO valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<br>
+$da_mem[content]
+<br>
+</font>
+</tr>
+</TABLE></DIV>
+")
+?>

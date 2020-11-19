@@ -1,0 +1,154 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//
+//login_check.phtml (로그인)
+//
+include("inc_initarray.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//-------------------------------------------------------------------------
+function Err_Loc($url){
+echo("
+<script>
+<!--
+location.href='$url'
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+function Err_Html($str){
+global $SETBGCOLOR,$SETCHARCOLOR;
+echo("
+<HTML>
+<BODY  bgcolor=$SETBGCOLOR>
+<CENTER>
+<BR><BR><BR>
+<FONT color=$SETCHARCOLOR>$str </font>
+<BR><BR><BR>
+<a href=\"javascript:history.back()\"><FONT color=$SETCHARCOLOR>다시입력</font></a>
+</CENTER>
+</BODY>
+</HTML>
+");
+exit;
+}
+
+
+if($part=="guin"){
+							$guin_gugic_db="guin_mem";	//각 로그인파트별로 로그인(DB이름결정)
+							$guin_gugic_table="offer";		//각 로그인파트별로 로그인(테이블이름결정)
+							$STRNAME="company";
+						}else{
+							$guin_gugic_db="gugic_mem";
+							$guin_gugic_table="hunt";
+							$STRNAME="name";
+						}
+
+
+$TC=Db_Connect($dfile[$guin_gugic_db],$dbuser,$dbpass,$HOST);	//회원아이디암호확인용
+//--------------------------------------------------------------------
+if($work=="LOGIN"){
+$id=trim($id);
+$password=trim($password);
+//--------------------입력값 검사-------------------------------------
+$QUE="SELECT id, password, listinfo, $STRNAME FROM $table_mem[$guin_gugic_table] WHERE id='$id'";
+
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da = mysql_fetch_array($RESULT);		//결과를 한줄씩 배열로 넣는다.
+$total=mysql_num_rows($RESULT);		   //존재여부
+
+
+if($total==0)Err_Msg("$id님의 아이디를 확인하십시오!  없으시면 회원가입을 먼저 하셔야 합니다!");
+if($password!=trim($da[1]))Err_Msg("암호가 일치 하지 않습니다! 다시 시도 하십시오!");
+//-------------------데이타에서 리스트를 읽어온다-----------------------
+
+
+if($USER_COOKIE_OFFER){	 $TMPDB=""; 
+										 $TABLE=""; 
+										 $IDMINE=trim($USER_COOKIE_OFFER);
+									 }else{
+										 $TMPDB=""; 
+										 $TABLE=""; 
+										 $IDMINE=trim($USER_COOKIE_HUNT);
+										 }
+//---------------------------------------------------------------------------
+
+if($part=="guin"){
+						$TC=Db_Connect($dfile[guin_tmp],$dbuser,$dbpass,$HOST);										//수신메세지확인용
+						$QUE="SELECT  COUNT(*) AS total	FROM $table_tmp[offer] WHERE id_mine='$id'";		//구인수신메세지 총수 구하기
+						$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+						$msg_num = mysql_result($RESULT,0,0); 
+						//echo $QUE;
+						//echo $msg_num;
+						setcookie("USER_COOKIE_MSGNUM",$msg_num);
+						setcookie("USER_COOKIE_OFFER",$id);							
+						setcookie("USER_COOKIE_NAME",$da[$STRNAME]);												//이름쿠키기억
+						setcookie("USER_COOKIE_HUNT","",time()+0);															//구인로그인하면 구직로그인 해제						
+						if($romid){setcookie("ROMID",$id,time()+86400*30);}else{setcookie("ROMID","",time()+0);};
+						if($rompassword){setcookie("ROMPASSWORD",$password,time()+86400*30);}else{setcookie("ROMPASSWORD","",time()+0);};
+
+						}else	{
+
+						$TC=Db_Connect($dfile[gugic_tmp],$dbuser,$dbpass,$HOST);									//수신메세지확인용
+						$QUE="SELECT  COUNT(*) AS total	FROM $table_tmp[hunt] WHERE id_mine='$id'";		//구직수신메세지 총수 구하기
+						$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+						$msg_num = mysql_result($RESULT,0,0); 						
+						setcookie("USER_COOKIE_MSGNUM",$msg_num);
+						setcookie("USER_COOKIE_HUNT",$id);
+						setcookie("USER_COOKIE_NAME",$da[$STRNAME]);												//이름쿠키기억
+						setcookie("USER_COOKIE_OFFER","",time()+0);															//구직로그인하면 구인로그인해제
+						if($romid){setcookie("ROMID",$id,time()+86400*30);}else{setcookie("ROMID","",time()+0);};
+						if($rompassword){setcookie("ROMPASSWORD",$password,time()+86400*30);}else{setcookie("ROMPASSWORD","",time()+0);};
+						}
+
+if($da[2]){			//listinfo(리스트등록글)이 유무검사
+				setcookie("USER_COOKIE_REGNUM","TRUE"); 
+				}else{
+				setcookie("USER_COOKIE_REGNUM",""); 
+				}
+
+//setcookie("set_id",$id,time()+20000*100);
+
+
+echo("
+			<HTML>
+			<HEAD>
+			<TITLE>회원로그인</TITLE>
+			<script>
+           		<!--
+			function trick(){
+					location.href='$sfile[indexhtml]'
+					}
+					//-->
+					</script>
+					</HEAD>
+					</HTML>
+		");									
+	Err_Loc("javascript:trick()"); // 상위 윈도우 리로드
+	}
+?>

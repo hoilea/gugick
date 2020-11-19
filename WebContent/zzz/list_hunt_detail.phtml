@@ -1,0 +1,189 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_hunt_view.phtml(구직리스트에서 제목클릭시 내용보이기)
+include("inc_initarray.phtml");
+include("./html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+$QUE="SELECT  *	FROM $table_hunt[$tcode] WHERE seq=$seq";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_gugic = mysql_fetch_array($RESULT);   //구직리스트의 내용읽기
+//----------------------------------------------------------
+$da_gugic[content]=nl2br($da_gugic[content]); //\n을 -> <br>로
+$da_gugic[content]=eregi_replace(" ","&nbsp;",$da_gugic[content]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//------------------------
+$NUM_sex=$da_gugic[sex];
+$NUM_experience_year=$da_gugic[experience_year];
+//------------------------
+
+//#15# => '제주' 형태로 만들기
+//--------------------------------------------------------------------------
+$dstr_area=explode("#",$da_gugic[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$dstr_area[$i];
+													$AREA_STR=$AREA_STR.$STR_work_area[$check_num]."     ";
+													}
+//-------------------------------------------------------------------------
+
+
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+SELECT name, email, tel, tel_public_yesno, juso_public_yesno, homepage, birth_yyyy, birth_mm, birth_dd, juso_num, juso, educational_last, educational_detail, photo
+FROM $table_mem[hunt] WHERE id='$da_gugic[id_fk_huntmem]'
+";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//-----------------------
+$NUM_educational_last=$da_mem[educational_last];
+//----------------------
+
+
+echo("
+<HTML>
+<BODY>
+<title>구직등록자정보</title>
+<link href='job.css' rel='stylesheet' type='text/css'>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$SETOUTLINE_COLOR>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='100' height='100'<p align='center'><font color=$SETPYO_CHARCOLOR>사진</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='600' height='100'<p align='center'><font color=$SETPYO_CHARCOLOR>$da_gugic[title]</font></td>
+</td>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>이름 </font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[name]</a></font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>성별</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>나이</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_gugic[age]</font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>최종학력</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_educational_last[$NUM_educational_last]</font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>전화</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[tel]</font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>주소</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_mem[juso] $da_mem[juso_num]</font>
+</tr>
+
+</TABLE></DIV>
+
+<br><br>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$SETOUTLINE_COLOR>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>근무경력</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_experience_year[$NUM_experience_year]</font>
+</tr>
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>근무지역</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$AREA_STR</font>
+</tr>
+</TABLE></DIV>
+
+<br><br>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$SETOUTLINE_COLOR>
+<font color=$SETPYO_CHARCOLOR>
+○자기소개　　　　　　　　　　　　　　　　　　　　　　　　　
+<a href=$sfile[list_hunt_detail]?seq=2&tcode=1>이력서보기</a>　　　　
+채용제의메세지보내기
+
+</font>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<br><br>
+$da_gugic[content]
+<br><br>
+</font>
+</tr>
+</TABLE></DIV>
+")
+
+
+
+/*
+
+$da_gugic[id_fk_huntmem]<br>
+$da_gugic[sex]<br>				
+$da_gugic[age]<br>				
+$da_gugic[experience_year]<br>
+$da_gugic[salary_year]<br>
+$da_gugic[salary_monthly]<br>
+$da_gugic[work_kind]<br>
+$da_gugic[work_class]<br>
+$da_gugic[work_area]<br>
+$da_gugic[title]<br>
+$da_gugic[content]<br>
+
+
+$da_mem[name]<br>
+$da_mem[email]<br>
+$da_mem[tel]<br>
+$da_mem[tel_public_yesno]<br>
+$da_mem[juso_public_yesno]<br>
+$da_mem[homepage]<br>
+$da_mem[birth_yyyy]<br>
+$da_mem[birth_mm]<br>
+$da_mem[birth_dd]<br>
+$da_mem[juso_num]<br>
+$da_mem[juso]<br>
+$da_mem[educational_last]<br>
+$da_mem[educational_detail]<br>
+$da_mem[photo]<br>
+*/
+
+?>

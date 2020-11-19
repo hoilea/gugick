@@ -1,0 +1,338 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_hunt_view.phtml(구직리스트에서 제목클릭시 내용보이기)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+
+//hit업테이트
+$QUEUPDATE="UPDATE $table_hunt[$tcode] SET hit=hit+1 WHERE seq=$seq";
+$RESULT=mysql_query($QUEUPDATE) or die(mysql_error($table_connect));
+
+$QUE="SELECT  *	FROM $table_hunt[$tcode] WHERE seq=$seq";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_gugic = mysql_fetch_array($RESULT);   //구직리스트의 내용읽기
+
+
+
+//----------------------------------------------------------
+//자기소개
+$da_gugic[content]=nl2br($da_gugic[content]); //\n을 -> <br>로
+$da_gugic[content]=eregi_replace(" ","&nbsp;",$da_gugic[content]); //space를 -> &nbsp;로
+
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//------------------------
+$NUM_sex=$da_gugic[sex];
+$NUM_work_kind=$da_gugic[work_kind];
+$NUM_salary_year=$da_gugic[salary_year];
+$NUM_experience_year=$da_gugic[experience_year];
+//------------------------
+
+//#15# => '제주' 형태로 만들기
+//--------------------------------------------------------------------------
+$dstr_area=explode("#",$da_gugic[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$dstr_area[$i];
+													$AREA_STR=$AREA_STR.$STR_work_area[$check_num]."/";
+													}
+$AREA_STR=substr($AREA_STR,0,-1); // 마지막 '/'제거
+//-------------------------------------------------------------------------
+
+
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+SELECT * FROM $table_mem[hunt] WHERE id='$da_gugic[id_fk_huntmem]'
+";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+
+
+
+if(trim($da_gugic[content])=="010"){	//소개서를 새로작성하면 content에 '010'이 들어가고 여기에서 읽어드릴때 '010'(새로작성)이면 회원정보의 소개서를 읽어드림
+													//---------------------------------------------------------------------------
+													$da_mem[content]=nl2br($da_mem[content]); //\n을 -> <br>로
+													$da_mem[content]=eregi_replace(" ","&nbsp;",$da_mem[content]); //space를 -> &nbsp;로
+													//--------------------------------------------------------------------------
+													$CONTENT_STR=$da_mem[content];
+													}else	{
+															$CONTENT_STR=$da_gugic[content];
+															}
+
+
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//-----------------------
+$NUM_educational_last=$da_mem[educational_last];
+//----------------------
+
+//구인회원이 로그인을 하지 않았으면 채용제의메세지기능을 사용하지 못한다!
+$LOGIN_STR=($USER_COOKIE_OFFER)?"<a href=\"javascript:window_scout('$sfile[tmp_offer]?tcode=$tcode&seq=$seq&toemail=$da_mem[email]&k=alobmui&p=$da_gugic[id_fk_huntmem]&m=jk10eryd')\"><font color=$SETPYO_CHARCOLOR><u>/채용제의메세지보내기</u></font></a>"
+													    :"<a href=$sfile[login_form_guin]?sfile2=$sfile[list_hunt_view]&tcode=$tcode&seq=$seq&loginoption=sublogin><font color=$SETPYO_CHARCOLOR><u>/채용제의메세지보내기</u></font></a>";
+
+//----------------------------------------------------------
+//학력사항
+$da_mem[educational_detail]=nl2br($da_mem[educational_detail]); //\n을 -> <br>로
+$da_mem[educational_detail]=eregi_replace(" ","&nbsp;",$da_mem[educational_detail]); //space를 -> &nbsp;로
+
+//경력사항
+$da_mem[experience_detail]=nl2br($da_mem[experience_detail]); //\n을 -> <br>로
+$da_mem[experience_detail]=eregi_replace(" ","&nbsp;",$da_mem[experience_detail]); //space를 -> &nbsp;로
+
+//자격증
+$da_mem[license]=nl2br($da_mem[license]); //\n을 -> <br>로
+$da_mem[license]=eregi_replace(" ","&nbsp;",$da_mem[license]); //space를 -> &nbsp;로
+
+//특기사항
+$da_mem[spacial]=nl2br($da_mem[spacial]); //\n을 -> <br>로
+$da_mem[spacial]=eregi_replace(" ","&nbsp;",$da_mem[spacial]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+$PHOTOSTR = ($da_mem[photo]) ? "$PHOTODIR$da_mem[photo]" : "$ICON_NOPHOTO";	//사진이 없으면 기존 이미지
+
+$STR_tel_public_yesno=($da_mem[tel_public_yesno])?"비공개":"$da_mem[tel]";
+$STR_juso_public_yesno=($da_mem[juso_public_yesno])?"비공개":"$da_mem[juso] ($da_mem[juso_num])";
+
+
+//연봉급여추출
+$NUM_salary_year=$da_gugic[salary_year];		//희망연봉		
+$SARARY=($da_gugic[salary_monthly])?"월 $da_gugic[salary_monthly] 만원": "$STR_salary_year[$NUM_salary_year]";
+
+//체크기능/레벨아이콘---------------------------------------------
+if($jsadmincookieval=="$ADMINID$ADMINPASSWORD"){
+																				$MEMOSTR="레벨";
+																				$WINDOWSTR="window_level";
+																				$MEMOTITLESTR="<font color=green><u>/레벨</u></font>";
+																				
+																				$ONLOADSTR="onLoad='start_focus()'";	//관리자 모드일때만 코드값입력폼이 있을때만 스타트포커스
+																				$ONLOADSCRIPT="function start_focus(){document.code.searchcode.focus();}";
+																				$NOSIE="";
+																			}else{
+																				$MEMOSTR="체크";	
+																				$WINDOWSTR="window_memo";
+																				$MEMOTITLESTR="<font color=$SETPYO_CHARCOLOR><u>/체크</u></font>";
+																				$DISABLE1="<!--";
+																				$DISABLE2="//-->";
+																				$NOSIE="run_program_ok_update_";	//html소스보기를 대비한 잡음문자
+
+																				$ONLOADSTR="";
+																				$ONLOADSCRIPT="";
+																			}
+
+$HERFMEMOSTR=(!$HTTP_COOKIE_VARS[USER_COOKIE_HUNT] && !$HTTP_COOKIE_VARS[USER_COOKIE_OFFER] && $jsadmincookieval != "$ADMINID$ADMINPASSWORD") 
+? "<font color=$SETPYO_CHARCOLOR><u>/체크</u></font>"
+: "<a href=\"javascript:$WINDOWSTR('db=gugic_list&tcode=$tcode&seq=$seq')\">$MEMOTITLESTR</a>";
+//--------------------------------------------------------------
+
+echo("
+<HTML>
+
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_memo(str){ //메모
+url= '$sfile[memo_list]?'+str;
+window.open(url,'new_win','width=500,height=300,scrollbars=yes,resizable=yes');
+}
+
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_hunt]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+
+function window_scout(str){ //설정체크값로딩
+open(str,'new_win','width=650,height=570,scrollbars=yes,resizable=yes');
+}
+
+$ONLOADSCRIPT
+//-->
+</SCRIPT>
+</HEAD>
+<BODY $ONLOADSTR>
+<title>구직등록자정보</title>
+<p align=center><font color=$SETPYO_CHARCOLOR>$da_gugic[title]</font>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=white width=$setsize_photowidth height=$setsize_photoheight valign='top'>
+
+
+<table border='0' cellpadding='0' cellspacing='0' width=$setsize_photowidth bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$setsize_photowidth height=$setsize_photoheight>
+<p align='center'><font color=white><img src=$PHOTOSTR  width=$setsize_photowidth height=$setsize_photoheight border=0></font>
+</td>
+</tr>
+</table>
+
+
+</td>
+<td bgcolor=$SETPYO_BACKCOLOR width='700'>
+$sethtml_banner
+</td>
+</tr>
+</TABLE>
+</DIV>
+<br><br>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='60' height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>이름</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='340' height='17' valign='bottom'><font color=$SETPYO_CHARCOLOR>$da_mem[name]</a></font></td>
+<td bgcolor=$setcolor_ctitle width='60' height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무형태</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR  width='340' height='17' valign='bottom'><font color=$SETPYO_CHARCOLOR>$STR_work_kind[$NUM_work_kind]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>성별</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>희망연봉 </b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$SARARY</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>나이</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_gugic[age]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무경력</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_experience_year[$NUM_experience_year]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>최종학력</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_educational_last[$NUM_educational_last]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무지역</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$AREA_STR</font>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>전화</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_tel_public_yesno</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>주소</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_juso_public_yesno</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>홈페이지</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><a href=$da_mem[homepage] target=blank><font color=$SETPYO_CHARCOLOR><u>$da_mem[homepage]</u></font></a></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>메일</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><a href=mailto:$da_mem[email]><a href=mailto:$da_mem[email]><font color=$SETPYO_CHARCOLOR><u>$da_mem[email]</u></a></font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+
+</TABLE></DIV>
+
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<font color=$SETPYO_CHARCOLOR>
+<b>○자기소개</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;　　　　　　　　　　
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href=\"javascript:history.back()\"><font color=$SETPYO_CHARCOLOR><u>/목록으로</u></font></a>&nbsp; $HERFMEMOSTR 
+$LOGIN_STR
+</font>
+
+$DISABLE1
+<FORM name=code  METHOD=POST ACTION=$sfile[admin_searchcode]>
+<a href=$NOSIE$sfile[list_hunt_admin_root]?db=gugic_mem&grv=$da_gugic[id_fk_huntmem]><font color=gray><u>/회원등록글관리</u></font></a>
+<font color=gray>(등록코드로 해당등록글찾기)</font>
+<input type=text size=20 name=searchcode>
+<input type=submit value='찾기'>
+</FORM>
+$DISABLE2
+
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<br>
+
+$CONTENT_STR
+
+<br>
+</font>
+</tr>
+</TABLE></DIV>
+
+<br><br>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<font color=$SETPYO_CHARCOLOR><b>○학력사항</b></font>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW height='17' valign='bottom'><br><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[educational_detail]</font></td>
+</tr>
+</TABLE></DIV>
+
+<br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<font color=$SETPYO_CHARCOLOR><b>○경력사항</b></font>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW height='17' valign='bottom'><br><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[experience_detail]</font></td>
+</tr>
+</TABLE></DIV>
+
+<br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<font color=$SETPYO_CHARCOLOR><b>○자격증/면허</b></font>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW height='17' valign='bottom'><br><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[license]</font></td>
+</tr>
+</TABLE></DIV>
+
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<font color=$SETPYO_CHARCOLOR><b>○특기사항</b></font>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_VIEW height='17' valign='bottom'><br><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[spacial]</font></td>
+</tr>
+</TABLE></DIV>
+$setinfo_tail
+</BODY>
+</HTML>
+")
+?>

@@ -1,0 +1,302 @@
+/*
+
+	terrafirma1.0 by nodethirtythree design
+	http://www.nodethirtythree.com
+
+*/
+
+*
+{
+padding: 0px;
+margin: 0px;
+}
+
+body
+{
+background: #F9F9F7 url('images/a1.gif') repeat-x;
+font-size: 11px;
+font-family: "trebuchet ms", helvetica, sans-serif;
+color: #8C8C73;
+line-height: 18px;
+}
+
+a
+{
+color: pink;
+}
+
+
+
+p
+{
+margin-bottom: 14px;
+text-align: justify;
+}
+
+img.picA
+{
+position: relative;
+top: -2px;
+background: url('images/kakao.png') no-repeat;
+width: 76px;
+height: 74px;
+padding: 8px;
+}
+
+img.picB
+{
+position: relative;
+top: -2px;
+background: url('images/kakao.png') no-repeat;
+width: 146px;
+height: 75px;
+padding: 7px;
+}
+
+img.floatleft
+{
+float: left;
+margin: 0px 14px 3px 0px;
+}
+
+
+ul.linklist
+{
+list-style: none;
+}
+
+ul.linklist li
+{
+border-top: solid 1px #EEEEEE;
+padding-top: 5px;
+margin: 5px 0px 0px 0px;
+}
+
+ul.linklist li.first
+{
+border-top: 0px;
+margin-top: 0px;
+padding-top: 0px;
+}
+
+#upbg
+{
+position: absolute;
+top: 0px;
+left: 0px;
+background: #fff url('images/upbg.gif') no-repeat;
+width: 747px;
+height: 264px;
+z-index: 1;
+}
+
+/* 대가리부분 디자인 박아주는거 */
+#outer
+{
+position: relative;
+width: 747px;
+margin: 0 auto;
+background: #fff url('images/abg.gif') repeat-y;
+}
+
+/* 만든거 앞으로 올려줌 없음 내려가드라 */
+#inner
+{
+position: relative;
+padding: 13px 30px 13px 30px;
+z-index: 2;	
+}
+
+#header
+{
+position: absolute;
+background: #a0b2d7;
+width: 666px;
+height: 92px;
+color: #fff;
+padding-left: 20px;
+}
+
+#header span
+{
+font-weight: normal;
+}
+
+#header h1
+{
+position: absolute;
+letter-spacing: -1px;
+top: 30px;
+height: 92px;
+}
+
+#header h2
+{
+position: absolute;
+font-weight: normal;
+color: #fff;
+top: 51px;
+}
+
+
+
+#splash
+{
+position: absolute;
+right: 30px;
+background: #EAEAE2 url('images/kakao.png');
+width: 458px;
+height: 92px;
+}
+
+#menu
+{
+position: relative;
+background: #a0b2d7;
+height: 67px;
+padding: 0px 20px 0px 5px;
+margin: 98px 0px 20px 0px;
+}
+
+
+
+#menu ul li
+{
+display: inline; /* 한줄로만들어줌 */
+line-height: 52px;
+padding-left: 3px;
+}
+
+#menu ul li.first
+{
+border-left: 0px;
+}
+
+#menu ul li a
+{
+background-color: #a0b2d7;
+background-repeat: repeat-x;
+padding: 8px 12px 8px 12px;
+font-size: 12px;
+color: black;
+font-weight: bold;
+}
+
+#menu ul li a:hover
+{
+background: #fff url('images/a18.gif') repeat-x top;
+color: #4A4A24;
+text-decoration: none;
+}
+
+#date
+{
+position: absolute;
+top: 0px;
+line-height: 52px;
+color: #BDBDA2;
+right: 30px;
+font-weight: bold;
+font-size: 12px;
+letter-spacing: -1px;
+}
+
+
+
+/* main content================================== */
+#primarycontent
+{
+position: relative;
+width: 480px;
+float: left;
+}
+
+/* 주제부분============================ */
+#primarycontent h3
+{
+position: relative;
+top: 4px;
+font-size: 18px;
+line-height: 25px;
+color: aqua;
+background: blue;
+letter-spacing: -1px;
+padding: 0px 0px 10px 15px;
+margin-bottom: 20px;
+}
+
+#primarycontent .content
+{
+padding: 0px 15px 0px 15px;
+margin-bottom: 20px;
+}
+
+#primarycontent .post
+{
+margin-bottom: 30px;
+}
+
+#primarycontent .post .header
+{
+position: relative;
+}
+
+#primarycontent .post .date
+{
+position: absolute;
+right: 15px;
+top: 0px;
+line-height: 35px;
+color: #AFAFA4;
+font-weight: bold;
+}
+
+#primarycontent .post .content
+{
+margin-bottom: 0px;
+}
+
+#primarycontent .post .footer
+{
+position: relative;
+top: -10px;
+background: url('images/a33.gif') repeat-x;
+height: 64px;
+}
+
+#primarycontent .post .footer ul
+{
+list-style: none;
+position: absolute;
+right: 15px;
+bottom: 15px;
+}
+
+#primarycontent .post .footer ul li
+{
+display: inline;
+line-height: 14px;
+padding-left: 17px;
+margin-left: 25px;
+background-repeat: no-repeat;
+background-position: 0px 2px;
+}
+
+
+
+#footer
+{
+position: relative;
+clear: both;
+height: 66px;
+text-align: left;
+/* line-height: 66px; */ /* 텍스트의 높낮이를 조절할수있음 */
+/* 마지막 회사 뒷 배경 이미지 넣을거 */
+background-image: url('../image/heart.png');
+color: #A8A88D;
+}
+
+#footer a
+{
+color: red;
+}

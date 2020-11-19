@@ -1,0 +1,48 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//tmp_list_del_hunt.phtml(구직회원의 수신메세지리스트에서 선택된 메세지삭제하기)
+
+include("inc_initarray.phtml");
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+$TC=Db_Connect($dfile[$db],$dbuser,$dbpass,$HOST);
+
+
+if(!count($del))Err_Msg("삭제하려는 메세지를 하나 이상 선택 하십시오!");
+
+for($i=0;$i<count($del);$i++){
+$QUE="	
+			DELETE FROM $table_tmp[hunt] 	WHERE seq = '$del[$i]'
+			";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+}
+
+$msg_num=$USER_COOKIE_MSGNUM-count($del);
+setcookie("USER_COOKIE_MSGNUM",$msg_num);
+echo("
+<META http-equiv='refresh' content='0;url=$sfile[tmp_list_hunt]?db=$db&id_mine=$id_mine&table=$table'>
+");
+?>

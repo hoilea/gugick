@@ -1,0 +1,165 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//구직회원ID중복검사 (search_id_hunt.phtml)
+include('inc_initarray.phtml');
+include("html_style.phtml");
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//=======================
+function Err_Loc($url){
+echo("
+<script>
+<!--
+location.href='$url'
+//-->
+</script>
+");
+exit;
+}
+//=======================
+
+function Err_Html($str){
+global $ICON_BLING;
+include("html_style.phtml");
+echo("
+<HTML>
+<BODY background=$ICON_BLING>
+<CENTER>
+<BR>
+$str
+<BR><BR>
+<BR>
+<a href=\"javascript:history.back()\">다시입력</a>
+</CENTER>
+</BODY>
+</HTML>
+");
+exit;
+}
+//=======================
+if($work=="LOGIN"){
+$id=trim($id);
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+//--------------------입력값 검사-------------------------------------
+$check_que="SELECT COUNT(id) FROM $table_mem[hunt] WHERE id='$id'";
+$result=mysql_query($check_que) or die(mysql_error($table_connect));
+$total=mysql_result($result,0,'COUNT(id)');  
+if($total>0){
+			echo("
+			<HTML>
+			<HEAD>
+			<TITLE>ID중복검사</TITLE>
+			</HEAD>
+			<BODY>
+			<input type=button value='$id 이미존재함'>&nbsp;<input type=button value='다시입력' onClick='history.back()'>
+			</BODY>
+			</HTML>
+			");
+		exit;
+		}
+
+//-----------------------------------------------------------------
+echo("
+			<HTML>
+			<HEAD>
+			<TITLE>ID중복검사</TITLE>
+		    <script>
+			<!--
+			function trick(){
+					opener.document.form.id.value='$id'; 
+					self.close()
+					}
+			//-->
+			</script>
+			</HEAD>
+			<BODY>
+			<input type=button value='$id 사용하기' onClick='trick()'>&nbsp;<input type=button value='다시입력' onClick='history.back()'>
+			</BODY>
+			</HTML>
+	");									
+exit;
+	}
+
+
+echo("<HTML>");
+include("html_style.phtml");
+
+echo("
+<HEAD>
+<title>ID중복검사</title>
+
+<script>
+<!--
+function isReady( form ) {
+if ( form.id.value == '' || form.id.value == null ){ 
+form.id.focus();
+return false;
+}
+//-------------------------------------------
+if(form.id.value.length < 4 ){
+alert('아이디는 4자이상 입니다!');
+form.id.focus();
+return false;
+}
+//-------------------------------------------
+if(form.id.value.length >10 ){
+alert('아이디는 10자이하 입니다!');
+form.id.focus();
+return false;
+}
+
+}
+
+
+function start_focus(){
+document.reg.id.focus();
+}
+
+//-->
+</script>
+</HEAD>
+<BODY onLoad=\"javascript:start_focus()\">
+<FORM name=reg onSubmit='return isReady(reg)' METHOD=POST ACTION=$PHP_SELF >
+<CENTER><FONT color=$SETCHARCOLOR><img src=$ICON_PV border=0> 사용하실 아이디를 입력하십시오!</FONT></CENTER>
+<CENTER>
+<br><br>
+<tr>
+<td width=250 height=25 bgcolor=$SETTABLECOLOR style='border-width:1px; border-style:solid; border-bottom-color:c0c0c0; border-left-color:#f5f5f5; border-top-color:#f5f5f5; border-right-color:c0c0c0; cellspacing=1 cellpadding=2'>
+<INPUT type=text name=id value='$search_id' maxlength=10 size=15>(한글/영문 4자~10자)<br>
+</td>
+</tr>
+<CENTER>
+<br><br>
+</TABLE>
+<CENTER>
+<INPUT type=hidden name=mode value=$mode>
+<INPUT type=hidden name=work value='LOGIN'>
+<INPUT type=submit value='ID중복검사시작'>&nbsp;<INPUT type=button onClick='self.close()' value='창닫기'>
+</CENTER>
+</FORM>
+</BODY>
+</HTML>
+");
+?>

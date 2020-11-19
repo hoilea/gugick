@@ -1,0 +1,135 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//search_list_hunt.phtml(검색된구직등록리스트)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+//--------------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$SEARCH_SEQ=explode("#",$rowstr[$tcode]);		//검색될 seq 추출
+
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+
+if($jsadmincookieval=="$ADMINID$ADMINPASSWORD"){
+																				$MEMOSTR="레벨";
+																				$WINDOWSTR="window_level";
+																				$MEMOTITLESTR="<font color=green>레벨</font>";
+																			}else{
+																				$MEMOSTR="체크";	
+																				$WINDOWSTR="window_memo";
+																				$MEMOTITLESTR="<img src=$ICON_MEMO border=0>";
+																			}
+
+
+
+//제목부분
+echo("
+<HTML>
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_memo(str){ //메모
+url= '$sfile[memo_list]?'+str;
+window.open(url,'new_win','width=500,height=300,scrollbars=yes,resizable=yes');
+}
+
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_hunt]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+</SCRIPT>
+<title>$table_title[$tcode]</title>
+</HEAD>
+<BODY>
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_outline>
+<tr>
+<td width=$SET_WIDTH_HUNT_LIST height='15' valign='bottom'>
+<p align='left'><font color=$SETSUBJECT_CHARCOLOR>『 $table_title[$tcode] 』 >> '$char'검색결과</font></td>
+</tr>
+</table>
+</div>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='45' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>번호</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='45' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>성별</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='40' height='25'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>경력</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='70' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>희망연봉</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='460' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>제목</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='80' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>최근수정일</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>$MEMOSTR</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>조회</font>
+</td>
+</tr>
+");
+//------------------------------------------------------------------------------------------------------
+
+for($i=0;$i<count($SEARCH_SEQ);$i++){	
+	$QUE="SELECT seq, id_fk_huntmem, sex, experience_year, salary_year, salary_monthly, title, editdate, hit  FROM $table_hunt[$tcode] WHERE seq = $SEARCH_SEQ[$i]";
+	$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+	$inum++;  //순번표시
+	$NUM_experience_year=$da[experience_year];
+	$NUM_salary_year=$da[salary_year];
+	$NUM_sex=$da[sex];
+	
+	$HERFMEMOSTR=(!$HTTP_COOKIE_VARS[USER_COOKIE_HUNT] && !$HTTP_COOKIE_VARS[USER_COOKIE_OFFER] && $jsadmincookieval != "$ADMINID$ADMINPASSWORD") 
+							? "<a href='#' onClick=\"return alert('체크기능을 사용하시려면 로그인을 먼저하셔야합니다!')\"><img src=$ICON_MEMO border=0></a>"
+							: "<a href=\"javascript:$WINDOWSTR('db=gugic_list&tcode=$tcode&seq=$da[seq]')\">$MEMOTITLESTR</a>";
+	
+	//내용
+	echo("
+	<tr onMouseOver=this.style.backgroundColor='e5e5e5' onMouseOut=this.style.backgroundColor='#f5f5f5' bgcolor='#f5f5f5'>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$inum</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_experience_year[$NUM_experience_year]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='right'><font color=$SETPYO_CHARCOLOR>$STR_salary_year[$NUM_salary_year]</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p>&nbsp;<a href=$sfile[list_hunt_view]?seq=$da[seq]&tcode=$tcode><font color=$SETPYO_CHARCOLOR>$da[title]</font></a>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[editdate]</font></td>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$HERFMEMOSTR</font></td>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[hit]</font></td>
+	</tr>
+");
+}//for
+//----------------------------------------------------------------------------------------------
+echo("
+</FORM></TABLE></DIV>
+<br><br>
+<div align=$setpos>
+<tr><TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_outline>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_LIST height='30' valign='middle'><p align='center'>
+<font color=$SETPYO_CHARCOLOR>$i 개의 글을 찾았습니다.</font>
+</td>
+</tr>
+</TABLE></DIV>
+$setinfo_tail
+</BODY></HTML>
+");
+?>

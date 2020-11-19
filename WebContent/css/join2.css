@@ -1,0 +1,235 @@
+@charset "UTF-8";
+
+* {
+	font-family: 'NanumSquare', "Apple SD Gothic Neo", Helvetica, sans-serif,
+		Arial;
+	font-size: 100%;
+	font-variant-ligatures: none;
+}
+.access_cnt ul {
+    width: 100%;
+    font-size: 13px;
+    list-style-type: none;
+}
+ul, ol {
+    list-style-type: none;
+}
+body, p, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, table, th, td, form, fieldset, legend, input, textarea, button, select {
+    margin: 0;
+    padding: 0;
+}
+
+ul {
+    display: block;
+    list-style-type: disc;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-inline-start: 40px;
+}
+.policyInsideList > div {
+    line-height: 23px;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+.access_navi p {
+    margin: 20px 0 10px 0;
+    line-height: 20px;
+    font-size: 13px;
+}
+.policyInsideList table, .policyInsideList table td, p, span {
+    font-family: "Nanum Barun Gothic", sans-serif !important;
+}
+body, p, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, table, th, td, form, fieldset, legend, input, textarea, button, select {
+    margin: 0;
+    padding: 0;
+}
+user agent stylesheet
+p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+.head {
+	padding-bottom: 30px;
+	text-align: center;
+}
+
+ul {
+	position: relative;
+	margin: auto;
+	margin-right: 600px;
+	width: 600px;
+	height: 80px;
+	list-style: none;
+}
+
+.topLi {
+	position: absolute;
+	top: 0;
+	text-align: center;
+}
+
+i {
+	display: inline-block;
+	position: relative;
+	width: 20px;
+	height: 20px;
+	background: #cccccc;
+	border-radius: 50%;
+	border: 2px solid transparent;
+}
+
+.ibefore::before {
+	content: '';
+	position: absolute;
+	top: 10px;
+	left: 23px;
+	width: 160px;
+	height: 1px;
+	background: #cccccc;
+}
+
+.box-container {
+	width: 1000px;
+	height: 1100px;
+	margin-left: 430px;
+	padding: 80px 50px 30px;
+	text-align: center;
+	background: #fff;
+	box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, .15);
+}
+
+.la-check-all {
+	position: relative;
+	margin-left: 900px;
+	text-align: left;
+	font-size: 15px;
+}
+
+.ab {
+	margin-left: 900px;
+}
+
+.box-container-title {
+	width: 600px;
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 21px;
+	letter-spacing: -0.04em;
+	text-align: left;
+}
+
+
+/* 체크박스 없에기. */
+.checkbox input[type=checkbox]{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    opacity: 0;
+    display: none;
+}
+
+ .checkbox input[type=checkbox] + label{
+    display : block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: url(../img/checkbox.png) no-repeat;
+}
+
+.check-all {
+    font-size: 1.04em;
+    font-weight: 700;
+}
+.checkbox {
+    display: inline-block;
+    position: relative;
+    padding-right: 50px;
+    height: 20px;
+}
+
+
+
+ .checkbox input[type=checkbox]:checked+ label {
+    background: url(../img/checkbox_checked.png) no-repeat;
+}
+
+}
+h1 {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 31px;
+    letter-spacing: -0.04em;
+}
+span{
+	font-size: 13px;
+	
+}
+.contents {
+	overflow: scroll;
+	padding: 20px 5px;
+	width: 100%;
+	height: 150px;
+	text-align: left;
+	background: #fafafa;
+	border: 1px solid #dddddd;
+	font-size: 11px;
+}
+#maintitle{
+	font-size: 20px;
+}
+
+.box-container-title {
+	position: relative;
+	margin-right: 1000px;
+	text-align: left;
+	font-size: 15px;
+}
+
+.box-container-mid {
+	padding-top: 50px;
+	border-top: 1px solid #e5e5e5;
+}
+
+.btn {
+	display: inline-block;
+	padding: 0 60px;
+	height: 55px;
+	line-height: 55px;
+	font-size: 1.04em;
+	font-weight: 700;
+	color: #fff;
+	letter-spacing: -0.04em;
+	background: #61564b;
+	border: 0;
+}
+
+.help-join {
+	margin-top: 80px;
+	padding-top: 30px;
+	border-top: 1px solid #e5e5e5;
+}
+
+.help-join h1 {
+	margin-bottom: 8px;
+	font-size: 19px;
+}
+
+.help-join h2 {
+	font-family: "Nanum Barun Gothic";
+	font-weight: 400;
+	line-height: 21px;
+	font-size: 15px;
+	letter-spacing: -0.06em;
+}

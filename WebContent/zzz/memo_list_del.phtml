@@ -1,0 +1,65 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//memo_list_del.phtml(메모리스트상의특정자료삭제)
+include("inc_initarray.phtml");
+//----------------------------------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//Str_Minus($delimiter,$origin_str,$minus_int);	//$origin_str 문자열에서 $minus_int 번째값제거 1#2#3  -> 1#3
+//----------------------------------------------------------------------------------------------------
+function Str_Minus($delimiter,$origin_str,$minus_int){
+			$strarray=explode("#",$origin_str);
+			for($i=0;$i<count($strarray);$i++){
+			if($i != $minus_int)$minus_str = $minus_str.$strarray[$i].$delimiter;
+			}
+			$return_str = substr($minus_str,0,-1);
+			return $return_str;
+			}
+//----------------------------------------------------------------------------------------------------
+if($HTTP_COOKIE_VARS[USER_COOKIE_HUNT]){
+																		$DBSELECTSTR="gugic_mem";
+																		$TABLESTR="hunt";
+																		$LOGINID=$USER_COOKIE_HUNT;
+																		}else{
+																		$DBSELECTSTR="guin_mem";
+																		$TABLESTR="offer";
+																		$LOGINID=$USER_COOKIE_OFFER;
+																		}
+
+$TC=Db_Connect($dfile[$DBSELECTSTR],$dbuser,$dbpass,$HOST);	//회원모드에따라 DB접속
+$QUE="SELECT memoinfo FROM $table_mem[$TABLESTR] WHERE id='$LOGINID'";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$memoinfo=mysql_result($RESULT,0,0);							//$memoinfo추출
+$memo_list_str=Str_Minus("#",$memoinfo,$delp);			//$delp 번째 문자열 삭제
+$QUE="UPDATE $table_mem[$TABLESTR] SET memoinfo='$memo_list_str' WHERE id='$LOGINID'";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+
+if($mode){ //memo_list_util.phtml 에서 삭제를 했을경우
+			echo("<META http-equiv='refresh' content='0;url=$sfile[memo_list_util]?modememoview=1'>");exit;
+			}else{
+			echo("<META http-equiv='refresh' content='0;url=$sfile[memo_list]?modememoview=1'>");exit;
+			}
+?>

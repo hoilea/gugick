@@ -1,0 +1,187 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//tmp_list_offer.phtml(구인로그인했을때 구인회원의 수신메세지리스트)
+if(!$HTTP_COOKIE_VARS[USER_COOKIE_OFFER]) die('접근불가');
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+//--------------------------------------------------------------------------------
+$line_max=$setnum_list;		//환경설정의 최대목록줄수적용
+$max_line_value=$line_max; //리스트줄수     //아래에서 값이 변할수 있는 변수(max_line_value).
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+$TC=Db_Connect($dfile[$db],$dbuser,$dbpass,$HOST);
+
+
+if(!$tr){ //로우총갯수가 없을때만, 즉 처음만 총갯수($tr)를 구한다.
+//===============================================================================
+
+$QUE="
+		SELECT count(*) FROM $table_tmp[$table] WHERE id_mine = '$id_mine'
+";
+//----------------------------------------------------------------------------------
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$tr=mysql_result($RESULT,0,0);
+$start=1;
+$page=1;	
+}
+
+//----------------------------------------------------------------------------------
+$total_page=ceil($tr/$max_line_value);		//분할 페이지수 
+$page_rest=$tr % $max_line_value;			//분할중 나머지 rows수	
+
+$limit_start=($max_line_value * $page)-($max_line_value); //LIMIT $limit_start, $max_line_value 
+if($page==1){
+					$limit_start=0;
+					if($tr < $max_line_value)$max_line_value=$page_rest;
+			     }
+if($page==$total_page && $page_rest)$max_line_value=$page_rest;
+//-----------------------------------------------------------------
+
+
+
+//구인수신메세지 쿼리를 적용한다.
+$QUE="SELECT seq, id_fk_huntmem,title, date  FROM $table_tmp[$table] WHERE id_mine = '$id_mine'  ORDER BY seq DESC";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);    //전체행수
+
+$NOVALUE_STR=(!$total)?"<font color=$SETPYO_CHARCOLOR>수신메세지가 없습니다.</font>":"<font color=$SETPYO_CHARCOLOR>$total 개의 수신메세지가 있습니다.</font>";
+
+//제목부분
+echo("
+<HTML>
+<HEAD>
+<SCRIPT language='JavaScript'>
+function del_submit() {
+//-------------------------------
+document.form.submit();
+}
+</SCRIPT>
+<title>수신메세지</title>
+</HEAD>
+<BODY>
+<form name='form' method='post' action=$sfile[tmp_list_del_offer]>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td width=$SET_WIDTH_HUNT_LIST height='15' valign='bottom'>
+<p align='left'><font color=$SETSUBJECT_CHARCOLOR>『수신메세지』&nbsp; Page $total_page / Total $tr </font></td>
+</tr>
+</table>
+</div>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='50' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>번호</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='130' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>보낸시각</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='600' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>제목</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='20' height='20'><p align='center'><font color=$SETOUTLINE_COLOR><a href='javascript:del_submit()'><img src=$ICON_DEL border=0></a></font>
+
+
+<input type=hidden name=db value=$db>
+<input type=hidden name=id_mine value=$id_mine>
+<input type=hidden name=table value=$table>
+
+
+</td>
+</td>
+</tr>
+");
+//------------------------------------------------------------------------------------------------------
+$inum=($page*$line_max)-$line_max;
+
+//------------------------------------------------------------------------------------------------------
+for($i=0;$i<$max_line_value;$i++){	
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+	$inum++;  //순번표시
+	//$HOT_STR=($da[t_hot_yesno]>400)?"<img src=$ICON_HOT border=0>":""; //hot마크값 t_hot_yesno가 1이면 마크를 보임 null이면 안보임
+
+	//내용
+	echo("
+	<tr onMouseOver=this.style.backgroundColor='e5e5e5' onMouseOut=this.style.backgroundColor='#f5f5f5' bgcolor='#f5f5f5'>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$inum</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$da[date]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'>&nbsp;<a href=$sfile[tmp_list_view_offer]?db=$db&table=$table&id_mine=$id_mine&seq=$da[seq]><font color=$SETPYO_CHARCOLOR>$da[title]</font></a>
+	<td height='17' valign='bottom'><p align='center'>
+	<input type=checkbox name=del[] value=$da[seq]>
+	</td>
+	</tr>
+");
+}//for
+//----------------------------------------------------------------------------------------------
+
+$STR="work_area=$work_area&work_kind=$work_kind&sex=$sex&experience_year=$experience_year&age=$age&tcode=$tcode";
+
+$move_total_page=ceil($total_page/$max_move); 
+$move_rest=$total_page % $max_move;		
+if($total_page < $max_move) $max_move=$total_page;  
+
+echo("
+</FORM>
+</TABLE>
+</DIV>
+<DIV align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=0><tr><td width=$SET_WIDTH_HUNT_LIST><p align=center><br>");		
+
+if($start > 1){	$page_prev=$start-1;		
+		$start_prev=$start - $max_move; 
+		print "<a href=$sfile[list_hunt]?$STR&page=1&start=1&tr=$tr>◁&nbsp;</a>";
+		print "<a href=$sfile[list_hunt]?$STR&page=$page_prev&start=$start_prev&tr=$tr>☜</a>";
+		}
+
+for($i=0;$i<$max_move;$i++){	//이동단추생성	
+		$page_button=$start+$i;		   
+		if($page_button<=$total_page){ //최대페이지수를 초과하지 않는다면..실행
+		if($page_button==$page){$color_1="<font color=green>"; $color_2="</font>";  $ahref_str1=""; $ahref_str2=""; }
+		else 
+		{$color_1=""; $color_2="";  $ahref_str1="<a href=$sfile[list_hunt]?$STR&page=$page_button&start=$start&tr=$tr>"; $ahref_str2="</a>"; }
+		print "$ahref_str1 $color_1 [$page_button] $color_2 $ahref_str2";
+		}
+		}
+
+if($total_page > ($start + $max_move -1)){ 		
+		$page_next=$start + $max_move; 
+		$start_next=$start + $max_move; 
+		print "<a href=$sfile[list_hunt]?$STR&page=$page_next&start=$start_next&tr=$tr>☞&nbsp;</a>";
+		print "<a href=$sfile[list_hunt]?$STR&page=$total_page&start=$total_page&tr=$tr>▷</a>";
+		}
+echo("
+<div align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=800 height='30' valign='middle'><p align='center'>$NOVALUE_STR</td>
+</tr>
+</TABLE>
+</div>
+</FORM>
+$setinfo_tail
+</BODY>
+</HTML>
+");
+?>

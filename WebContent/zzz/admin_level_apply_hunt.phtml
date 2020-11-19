@@ -1,0 +1,74 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_level_apply_hunt.phtml(구직등록글조정레벨적용(저장)하기)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$dbtcodeseq=$db.$tcode.$seq;	//넘어온정보로 dbtcodeseq 키추출
+
+//기존에 존재 했던 자료였다면 업데이트쿼리 아니면 삽입쿼리
+$QUE=($total) ? "
+						UPDATE $table_jelse[level] 
+						SET level=$level, weight=$weight 
+						WHERE dbtcodeseq='$dbtcodeseq'
+						"
+						:
+						"
+						INSERT INTO $table_jelse[level] 
+						VALUES('','$dbtcodeseq','$db',$tcode,$seq,'',$level,$weight,1)
+						";
+		
+if($level==0)$QUE="
+				DELETE FROM $table_jelse[level] 
+				WHERE dbtcodeseq='$dbtcodeseq'
+				";
+//----------------------------------------------------------------------------------
+//echo $QUE; exit;
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+
+$STR_openreload=($mode==admin)?"opener.document.location.reload(true);":"";
+
+echo("
+<HTML>
+<HEAD>
+<TITLE>등록글레벨조정완료</TITLE>
+<SCRIPT language='JavaScript'>
+<!--
+function c(){			 //설정체크값로딩
+$STR_openreload	//admin_start_list.phtml에서 레벨조정할때만 opener 페이지리로드
+self.close()
+}
+//-->
+</SCRIPT>
+</HEAD>
+<body onLoad='c()'>
+</body>
+</html>
+");
+?>

@@ -1,0 +1,706 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//member_mreg_hunte.phtml 구직회원관리에서사용되는회원정보수정폼
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------
+function Get_Age($birth_year){             //년도로 나이구하기
+$current_date=date( "Y", time() );
+$AGE=$current_date-(int)$birth_year;
+return $AGE;
+}
+//----------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT id, password, name, sex, email, tel, tel_public_yesno, juso_public_yesno, homepage, idnum1, idnum2, birth_yyyy, birth_mm, birth_dd, juso_num, juso,
+						work_class, work_area, work_kind, salary_year, salary_monthly, experience_year, experience_detail, educational_last, educational_detail, license, spacial, content, photo
+			FROM $table_mem[hunt] 
+			WHERE id='$pid'";
+
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da = mysql_fetch_array($RESULT);		//결과를 한줄씩 배열로 넣는다.
+
+
+//----------------------------------------------------------------------------------------------------
+$AGE=Get_Age($da[birth_yyyy]);
+//--------------------------------------------------------------------------
+$dstr_class=explode("#",$da[work_class]);
+for($i=1;$i<count($dstr_class)-1;$i++){
+													$check_num=$mreg_hunte_class_start+$dstr_class[$i];
+													$script_class_str=$script_class_str."document.form.elements[".$check_num."].checked = true;  ";
+													}
+
+$dstr_area=explode("#",$da[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$mreg_hunte_area_start+$dstr_area[$i];
+													$script_area_str=$script_area_str."document.form.elements[".$check_num."].checked = true;  ";
+													}
+//-------------------------------------------------------------------------
+//근무형태
+$TNUM=$da[work_kind];
+$script_work_kind="document.form.work_kind[$TNUM].checked = true";
+
+//희망연봉
+$TNUM=$da[salary_year];
+$script_salary_year="document.form.salary_year.options[$TNUM].selected = true";
+
+//경력년수
+$TNUM=$da[experience_year];
+$script_experience_year="document.form.experience_year.options[$TNUM].selected = true";
+
+//최종학력
+$TNUM=$da[educational_last];
+$script_educational_last="document.form.educational_last.options[$TNUM].selected = true";
+
+
+
+//-------------------------------------------------------------------------
+echo("
+<html>
+<head>
+<meta http-equiv='content-type' content='text/html; charset=euc-kr'>
+<title>$da[name]님의 회원정보수정</title>
+<link href='job.css' rel='stylesheet' type='text/css'>
+
+<SCRIPT language='JavaScript'>
+<!--
+
+
+function c(){ //설정체크값로딩
+
+$script_class_str
+$script_area_str
+$script_work_kind
+$script_salary_year
+$script_experience_year
+$script_educational_last
+
+auto_sex()
+
+}
+
+
+//주민등록번호입력시 생년월일 자동입력-----------------------------
+	
+	function auto_birth() {
+		var tmp1,tmp2,tmp3;
+		tmp1=document.form.idnum1.value.substring(0,2);
+		tmp2=document.form.idnum1.value.substring(2,4);
+		tmp3=document.form.idnum1.value.substring(4,6);
+		document.form.birth_yyyy.value='19'+tmp1;
+		document.form.birth_mm.value=tmp2;
+		document.form.birth_dd.value=tmp3;
+	}
+
+//주민등록입력시 성별 자동입력-------------------------------------
+
+	function auto_sex() {
+		var tmp;
+		tmp1=document.form.idnum2.value.substring(0,1);
+		if (tmp1 == '1')
+		{
+			document.form.sex[0].checked = true;
+		}
+		else
+		{
+			document.form.sex[1].checked = true;
+		}
+	}
+
+
+//숫자/문자체크-------------------------
+function isInt( elm ) {
+var elmstr = elm.value + '';
+if ( elmstr == '' )
+return false;
+
+for ( var i=0; i<elmstr.length; i++ ) {
+if ( elmstr.charAt(i) < '0' || elmstr.charAt(i) > '9' )
+return false;
+}
+return true;
+}		
+
+//주민번호체크및 빈칸체크------------------
+function isFilled( elm ) {
+if ( elm.value == '' || elm.value == null ) 
+return false;
+else
+return true;
+}
+
+function isReady( form ) {
+//-------------------------------------------
+if ( isFilled(document.form.id) == false ) {
+alert('구직회원 아이디를 입력하세요!');
+document.form.id.focus();
+return false;
+}
+//-------------------------------------------
+if( document.form.id.value.length < 4 ){
+alert('아이디는 4자이상 입니다!');
+document.form.id.focus();
+return false;
+}
+//-------------------------------------------
+if( document.form.id.value.length >10 ){
+alert('아이디는 10자이하 입니다!');
+document.form.id.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.password) == false ) {
+alert('구직회원 암호를 입력하세요!');
+document.form.password.focus();
+return false;
+}
+//-------------------------------------------
+if( document.form.password.value.length < 4 ){
+alert('암호는 4자이상 입니다!');
+document.form.password.focus();
+return false;
+}
+//-------------------------------------------
+if( document.form.password.value.length  > 10 ){
+alert('암호는 10자이하 입니다!');
+document.form.password.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.repassword) == false ) {
+alert('암호확인란을 입력하세요!');
+document.form.repassword.focus();
+return false;
+}
+//-------------------------------------------
+if (document.form.password.value != document.form.repassword.value)
+ {
+alert('암호와 암호확인이 다릅니다..');
+document.form.repassword.focus();
+return false;
+} 
+//-------------------------------------------
+if ( isFilled(document.form.name) == false ) {
+alert('구직회원 이름을 입력하세요!');
+document.form.name.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.email) == false ) {
+alert('구직회원 메일주소를 입력하세요!');
+document.form.email.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.juso) == false ) {
+alert('구직회원 주소를 입력하세요!');
+document.form.juso.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.juso_num) == false ) {
+alert('구직회원 우편번호를 입력하세요!');
+document.form.juso_num.focus();
+return false;
+}
+
+//-------------------------------------------
+if ( document.form.birth_yyyy.value == '' || document.form.birth_yyyy.value == null) {
+alert('생년월일을 정확히 입력해 주세요!');
+document.form.birth_yyyy.focus();
+return false;
+}
+//-------------------------------------------
+if ( document.form.birth_yyyy.value.length <4) {
+alert('생년월일중 생년은 4자리(2000)로 입력해 주세요!');
+document.form.birth_yyyy.focus();
+return false;
+}
+//-------------------------------------------
+if(isInt(document.form.birth_yyyy) == false){
+alert('생년월일을 생년은 숫자 4자리로 입력하세요!');
+document.form.birth_yyyy.focus();
+return false;
+}
+
+//----------------------------------------------  
+var tmp =0  
+var yy = document.form.idnum1.value.substring(0,2)
+var mm = document.form.idnum1.value.substring(2,4)
+var dd = document.form.idnum1.value.substring(4,6)
+var sex = document.form.idnum2.value.substring(0,1)
+
+if ((document.form.idnum1.value.length != 6 )|| (yy <25 || mm <1 || mm>12 ||dd<1) )
+  {
+    alert ('주민등록번호를 입력하여 주십시오.');
+    document.form.idnum1.focus();
+    return false;
+  }
+
+for (var i = 0; i <=5 ; i++)
+tmp = tmp + ((i%8+2) * parseInt(document.form.idnum1.value.substring(i,i+1)))
+
+for (var i = 6; i <=11 ; i++)
+tmp = tmp + ((i%8+2) * parseInt(document.form.idnum2.value.substring(i-6,i-5)))
+ 
+
+tmp = 11 - (tmp %11)
+tmp = tmp % 10
+
+if (tmp != document.form.idnum2.value.substring(6,7))
+		 {
+		    alert ('잘못된 주민등록번호입니다.');
+		    document.form.idnum1.focus();
+		     return false;
+		  }  
+
+
+
+/*----------------------------------------------------
+//업종체크박스(하나이상체크가 되어 있어야 한다.)
+var count=0
+for (var i=0;i<58;i++) { 	if (form.work_class[i].checked==true)count++;  }
+
+if (count == 0){
+					alert('희망업종은 하나이상 선택해야 합니다!');
+			 		form.work_class[0].focus();
+					return false;
+		 		}
+
+if (count>5){
+					alert('희망업종은 5개까지 선택가능합니다.');
+			 		form.work_class[0].focus();
+					return false;
+		 		}
+
+//----------------------------------------------------
+//근무지역체크박스(하나이상체크가 되어 있어야 한다.)
+var count=0
+for (var i=0;i<22;i++) { 	if (form.work_area[i].checked==true)count++;  }
+
+if (count == 0){
+					alert('근무희망지역은 하나이상 선택해야 합니다!');
+			 		form.work_area[0].focus();
+					return false;
+		 		}
+
+if (count>4){
+					alert('근무희망지역은 4개까지 선택가능합니다.');
+			 		form.work_area[0].focus();
+					return false;
+		 		}
+*/
+
+//---------------------------------------------------
+if (document.form.educational_last.value == '--')
+ {
+alert('최종학력을 선택하십시오! 이력서항목중 최종학력과 학력사항란을 필수 항목입니다.');
+document.form.educational_last.focus();
+return false;
+} 
+
+//-------------------------------------------
+if ( isFilled(document.form.educational_detail) == false ) {
+alert('학력사항을 입력하세요!');
+document.form.educational_detail.focus();
+return false;
+}
+
+
+}
+//-->
+</SCRIPT>
+</head>
+
+<BODY bgcolor='white' text='black' link='blue' vlink='purple' alink='red' onLoad='c()'>
+<FORM name='form' onSubmit='return isReady(form)' method=post action=$sfile[member_mreg_huntw] ENCTYPE='multipart/form-data'>
+<p align='center'>$da[name]님의 구직 회원정보 수정<br><br> 
+
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='$SET_WIDTH_MREG'  height='20' bgcolor='white' bordercolor='white'>
+<tr>
+<td width='799' height='644'>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='1' width='$SET_WIDTH_MREG' bgcolor='$setcolor_outline' style='BORDER-BOTTOM: #006490 0px solid; BORDER-LEFT-COLOR: #006490; BORDER-LEFT-WIDTH: 0px; BORDER-RIGHT-COLOR: navy; BORDER-RIGHT-WIDTH: 0px; BORDER-TOP: #006490 0px solid'>
+<tr>
+<td width='$SET_WIDTH_MREG' valign='top' bgcolor='white'>
+
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='$SET_WIDTH_MREG' bgcolor='white' bordercolor='white'>
+
+<tr>
+<td width='86' height='26'><p align='right'>&nbsp;회원아이디<br><br></td>
+<td width='104' height='26'><p align='left'>
+<input type='text' tabindex=1 name='id' readonly  value='$da[id]' maxlength='20' size='13' class='colorbox' index='1'>
+<input type='button' tabindex=2 value='ID변경안됨'></td><td width='84' height='26'><p align='left'>&nbsp;</td>
+<td width='34' height='26'><p align='right'>이름</td><td width='232' height='26'><p align='left'>
+<input type='text' tabindex=7 name='name' value='$da[name]' tabindex=4 maxlength='10' size='13' class='colorbox'>&nbsp;</td>
+<td width='54' height='26'><p align='right'>메일</td><td width='207' height='26'><p>
+<input type='text' tabindex=10 name='email' value='$da[email]'size='28' class='colorbox'></td>
+</tr>
+
+<tr>
+<td width='86'><p align='right'>&nbsp;암호</td><td width='104'><p align='left'>
+<input type='password' tabindex=3 name='password' value='$da[password]' maxlength='10' size='13' class='colorbox'>&nbsp;</td>
+
+<td width='118' colspan='2'><p align='right'>&nbsp;주민등록번호</td><td width='232'><p align='left'>
+<input type='text' tabindex=8 onChange=auto_birth() name='idnum1' value='$da[idnum1]' maxlength='6' size='13' class='colorbox'> - 
+<input type='text' tabindex=9 onChange=auto_sex() name='idnum2' value='$da[idnum2]' maxlength='7' size='13' class='colorbox'></td>
+
+<td width='54'><p align='right'>성별</td>
+<td width='207'><p><input type='radio' name='sex' value='1' checked>남자 <input type='radio' name='sex' value='2'>여자</td>
+</tr>
+
+<tr>
+<td width='86'><p align='right'>암호확인</td><td width='104'><p align='left'>
+<input type='password'value='$da[password]'  tabindex=4 name='repassword' maxlength='10' size='13' class='colorbox'></td>
+<td width='118' colspan='2'><p align='right'>생년월일</td>
+<td width='232'><p align='left'><input type='text' name='birth_yyyy' value='$da[birth_yyyy]' maxlength='4' size='4' class='colorbox'>년 &nbsp;
+<input type='text' name='birth_mm' value='$da[birth_mm]'maxlength='2' size='3' class='colorbox'>월 &nbsp;<input type='text' name='birth_dd' value='$da[birth_dd]' maxlength='2' size='2' class='colorbox'>일</td>
+<td width='54'><p align='right'>&nbsp;연락처</td>
+<td width='207'><p>
+<input type='text' tabindex=11 name='tel' value='$da[tel]' maxlength='14' size='28' class='colorbox'></td>
+</tr>
+
+<tr>
+<td width='86'><p align='right'>주소</td><td width='104'><p>
+<input type='button' tabindex=5 value='주소자동입력'></td>
+<td width='118' colspan='2'><p align='right'>주소</td>
+<td width='495' colspan='3'><p align='left'>
+<input type='text' name='juso' value='$da[juso]' size='62' class='colorbox'> 
+<input type='text' name='juso_num' value='$da[juso_num]' maxlength='7' size='11' class='colorbox'></td>
+</tr>
+
+<tr>
+<td width='86'><p align='right'>홈페이지</td><td width='700' colspan='6'><p align='left'>
+<input type='text' tabindex=6 name='homepage' value='$da[homepage]' maxlength='50' size='29' class='colorbox'> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox' tabindex=12 name='tel_public_yesno' value='1'>연락처비공개 &nbsp;
+<input type='checkbox' tabindex=13 name='juso_public_yesno' value='1'>주소비공개 (구직등록시 연락처/주소를 공개 하지 않음)</td>
+</tr>
+
+</table></div>
+</td>
+</tr>
+</table></div>
+
+<br><br>
+ <font color='green'><b>[희망업종선택] </b></font>
+ ☜희망업종은 5개까지 선택이 가능합니다. 이자료는 구직리스트에 등록시 근무희망업종 선택란의 기본 값으로 사용됩니다.<br> 
+
+<div align='center'><table border='0' cellpadding='0' cellspacing='1' width='$SET_WIDTH_MREG' bgcolor='$setcolor_outline' style='BORDER-BOTTOM: #006490 0px solid; BORDER-LEFT-COLOR: #006490; BORDER-LEFT-WIDTH: 0px; BORDER-RIGHT-COLOR: navy; BORDER-RIGHT-WIDTH: 0px; BORDER-TOP: #006490 0px solid'>
+
+<tr>
+<td width='256' valign='top' bgcolor='white'>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[업종별]</b></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='0'>건설/토목/건축/조경<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='1'>광고(기획/홍보/영업/제작)</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='2'>교육/강사/학원</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='3'>농업/수산업/축산업/광업</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='4'>기계/자동차/금속</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='5'>관광/호텔/여행/항공<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='6'>금융기관(은행/금고/증권/보험)<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='7'>건강/병원/의약/화장품<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='8'>공공기관/공사/공공서비스/협회</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='9'>방송/언론<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='10'>출판/인쇄/편집</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='11'>목재/제지</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='12'>유통/운송/음식료</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='13'>석유/화학/에너지<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='14'>섬유/의류/패션&nbsp; <br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='15'>전기/전자/컴퓨터<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='16'>용역/기타서비스<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td> </tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[기타]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='17'>임원</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='18'>아르바이트<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='19'>병역특례<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='20'>프리랜서<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='21'>자원봉사<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='22'>장애인</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='23'>고령인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='24'>노무직<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+</table></div>
+
+<p>&nbsp;</td>
+<td width='234' valign='top' bgcolor='white'>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+<tr>
+<td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' valign='top'><p><font color='green'><b>[사무관리직]</b></font></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p>
+<input type='checkbox' name='work_class[]' value='25'>경리/회계/재무<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='26'>마케팅/영업(국내)</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='27'>무역/영업(해외)&nbsp;<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='28'>사무직(기획/총무/인사/자재/비서)<br></td></tr>
+<tr><td width='236' height='14' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' valign='top'><p><font color='green'><b>[전문직]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='29'>법률/특허<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='30'>증권</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='31'>번역/통역<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='32'>세무/회계<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='33'>공인중개사/부동산<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='34'>통계/수리<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='35'>감정평가<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='36'>경매관리<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='37'>경영지도/경영분석</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='38'>인테리어/실내디자인<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='39'>의상/패션디자인/코디네이터<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='40'>이벤트/레크레이션<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='41'>비디오촬영/카메라<br></td></tr>
+<tr><td width='236' valign='top'><p><input type='checkbox' name='work_class[]' value='42'>미용</td></tr>
+<tr><td width='236' valign='top'><p><input type='checkbox' name='work_class[]' value='43'>서적/소설/시/만화/작가<br></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><font color='green'><b>[기술/기능/생산직]<br></b></font></td></tr>
+<tr><td width='236' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='44'>생산관리/생산직/기능직<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='45'>기술/연구개발<br></td></tr>
+</table></div>
+</td>
+
+<td width='306' valign='top' bgcolor='white'>
+<div align='left'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+<tr><td width='255' valign='top'><p><br></td></tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[컴퓨터/웹/네트워크]</b></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='46'>웹마스터/네트워크/서버구축관리</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='47'>웹프로그램/컨텐츠/개발<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='48'>웹디자인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='49'>데이타베이스<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='50'>웹마케팅/영업/정보제공/기획&nbsp;<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='51'>몰마스터/쇼핑자키/샵바인더/정보검색<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><font color='green'><b>[정보통신/전산]<br></b></font></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='52'>전산/프로그래머</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='53'>통신기술/기술영업<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='54'>시스템분석/하드웨어/설계<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><font color='green'><b>[컴퓨터디자인]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='55'>편집디자인/MAC편집<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='56'>제품/산업디자인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='57'>CAD/CAM<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='58'>캐릭터/에니메이션/그래픽디자인</td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+</table></div></td>
+</tr>
+
+<tr>
+<td width='$SET_WIDTH_MREG' valign='top' colspan='3' bgcolor='white'><p><br> <br> <font color='green'><b>[근무희망지역선택] </b></font>
+☜근무희망지역은 4개까지 선택 가능합니다. 이자료는 구직리스트에 등록시 근무희망지역 선택란의 기본 값으로 사용됩니다.
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='1' width='750' bgcolor='black' style='BORDER-BOTTOM: #006490 0px solid; BORDER-LEFT-COLOR: #006490; BORDER-LEFT-WIDTH: 0px; BORDER-RIGHT-COLOR: navy; BORDER-RIGHT-WIDTH: 0px; BORDER-TOP: #006490 0px solid'>
+<tr>
+
+<td width='733' bgcolor='white'><p>
+<input type='checkbox' name='work_area[]' value='0'>서울 &nbsp;
+<input type='checkbox' name='work_area[]' value='1'>경기 &nbsp;
+<input type='checkbox' name='work_area[]' value='2'>인천 &nbsp;
+<input type='checkbox' name='work_area[]' value='3'>강원 
+<input type='checkbox' name='work_area[]' value='4'>대전 &nbsp;
+<input type='checkbox' name='work_area[]' value='5'>충남 &nbsp;
+<input type='checkbox' name='work_area[]' value='6'>충북 &nbsp;
+<input type='checkbox' name='work_area[]' value='7'>전북 &nbsp;
+<input type='checkbox' name='work_area[]' value='8'>전남 &nbsp;
+<input type='checkbox' name='work_area[]' value='9'>광주 &nbsp;
+<input type='checkbox' name='work_area[]' value='10'>경북 &nbsp;
+<input type='checkbox' name='work_area[]' value='11'>경남 
+</td></tr>
+
+<tr>
+<td width='733' bgcolor='white'><p>
+<input type='checkbox' name='work_area[]' value='12'>대구 &nbsp;
+<input type='checkbox' name='work_area[]' value='13'>울산 &nbsp;
+<input type='checkbox' name='work_area[]' value='14'>부산 &nbsp;
+<input type='checkbox' name='work_area[]' value='15'>제주 
+<input type='checkbox' name='work_area[]' value='16'>아시아 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox' name='work_area[]' value='17'>아프리카 &nbsp;
+<input type='checkbox' name='work_area[]' value='18'>중남미 &nbsp;
+<input type='checkbox' name='work_area[]' value='19'>오세아니아 &nbsp;&nbsp;
+<input type='checkbox' name='work_area[]' value='20'>유럽 &nbsp;
+<input type='checkbox' name='work_area[]' value='21'>북미&nbsp;
+</td>
+</tr>
+</table></div>
+<p>&nbsp;</p>
+<p><font color='green'><b>[이력서작성] </b></font><u>☜구직신청시 기본이력서로 사용됩니다. <font color='green'>(필수)</font>항목을 제외하고 다음에 구직신청할때 등록하셔도 됩니다. </u>
+<div align='center'><table border='0' cellpadding='0' cellspacing='0' width='$SET_WIDTH_MREG' bgcolor='white' bordercolor='white'>
+<tr>
+<td width='80'><p align='right'>&nbsp;<br> </td>
+<td width='720'><p><br> <b>근무형태 &nbsp;&nbsp;</b>
+<input type='radio' name='work_kind' value='0' checked>무관 &nbsp;&nbsp; 
+<input type='radio' name='work_kind' value='1'>정규직 &nbsp;&nbsp;&nbsp; 
+<input type='radio' name='work_kind' value='2'>&nbsp;비정규직 &nbsp;&nbsp;
+<input type='radio' name='work_kind' value='3'>&nbsp;아르바이트</td>
+</tr>
+
+<tr>
+<td width='80'>
+<p>&nbsp;</td>
+<td width='720'>
+<p>&nbsp;</td>
+</tr>
+<tr>
+
+<td width='80'>
+<p align='right'>&nbsp;</td>
+<td width='720'><p align='left'><b>희망연봉</b>
+<select name='salary_year' class='colorbox'>
+                                    <option value='1'>희망연봉선택</option>
+									<option value='1'>면접후결정</option>
+                                    <option value='2'>700~1000</option>
+                                    <option value='3'>1000~1200</option>
+                                    <option value='4'>1200~1500</option>
+                                    <option value='5'>1500~2000</option>
+                                    <option value='6'>2000~2500</option>
+                                    <option value='7'>2500~3000</option>
+                                    <option value='8'>3000~3500</option>
+                                    <option value='9'>3500~4000</option>
+                                    <option value='10'>4000~6000</option>
+                                    <option value='11'>6000~9000</option>
+                                    <option value='12'>9000이상</option>
+</select> 
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;희망월급여
+
+
+<input type='text' name='salary_monthly' value='$da[salary_monthly]'maxlength=3 size='3' class='colorbox'>만원 &nbsp;&nbsp;
+<font color=red> ☜ 임시직/아르바이트가 아니면 입력 하지 마십시오.</font></td>
+</tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='right'><br> <br><br></td><td width='720'><p>
+
+<select name='experience_year' class='colorbox'>
+                                    <option value='1'>경력년수선택</option>
+                                    <option value='1'>신입(경력없음)</option>
+                                    <option value='2'>1개월</option>
+                                    <option value='3'>3개월</option>
+                                    <option value='4'>6개월</option>
+                                    <option value='5'>1년</option>
+                                    <option value='6'>2년</option>
+                                    <option value='7'>3년</option>
+                                    <option value='8'>4년</option>
+                                    <option value='9'>5년</option>
+                                    <option value='10'>6년</option>
+                                    <option value='11'>7년</option>
+                                    <option value='12'>8년</option>
+                                    <option value='13'>9년</option>
+                                    <option value='14'>10년</option>
+                                    <option value='15'>15년</option>
+                                    <option value='16'>20년</option>
+                                    <option value='17'>25년</option>
+                                    <option value='18'>30년이상</option>
+</select>
+&nbsp;</td></tr>
+
+<tr><td width='80' rowspan='2'><p align='right'>&nbsp;</td><td width='720'><p align='left'><b>○경력사항</b></td></tr>
+<tr><td width='720'><p align='left'><textarea name='experience_detail' rows='7' cols='100' class='colorbox'>$da[experience_detail]</textarea></td></tr>
+<tr><td width='80'><p align='right'><br></td><td width='720'><p><br> 
+
+<select name='educational_last' class='colorbox'>
+                                    <option value='--'>최종학력선택</option>
+                                    <option value='1'>초등학교졸업</option>
+                                    <option value='2'>중학교졸업</option>
+                                    <option value='3'>고등학교졸업</option>
+                                    <option value='4'>대학교졸업(2년)</option>
+                                    <option value='5'>대학교졸업(4년)</option>
+                                    <option value='6'>대학원졸업</option></select>
+									<font color='green'>(필수)</font>
+									</td>
+		                            </tr>
+<tr><td width='80' rowspan='3'><p align='right'>&nbsp;</td><td width='720'><p align='right'>&nbsp;</td></tr>
+
+<tr><td width='720'><p align='left'><b>○학력사항</b>&nbsp;<font color='green'>(필수)</font></td></tr>
+
+<tr><td width='720'><p align='left'><textarea name='educational_detail' rows='7' cols='100' class='colorbox'>$da[educational_detail]</textarea></td></tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='80' rowspan='2'><p align='right'><br> </td><td width='720'><p align='left'><b>○자격증/면허</b></td></tr>
+
+<tr><td width='720'><p><textarea name='license' rows='5' cols='100' class='colorbox'>$da[license]</textarea></td></tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='80' rowspan='2'><p align='right'>&nbsp;</td><td width='720'><p align='left'><b>○특기사항</b></td></tr>
+
+<tr><td width='720'><p><textarea name='spacial'  rows='5' cols='100' class='colorbox'>$da[spacial]</textarea></td></tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='80' rowspan='2'><p align='right'>&nbsp;</td><td width='720'><p align='left'><b>○자기소개서</b></td></tr>
+
+<tr><td width='720'><p><textarea name='introduce' rows='16' cols='100' class='colorbox'>$da[content]</textarea></td></tr>
+
+<tr><td width='80'><p>&nbsp;</td> <td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='80'><p>&nbsp;</td> <td width='720'>
+<input type='file' name='photo'>
+<br>
+<font color=green>☜ 사진화일이 있으시면 찾아보기버튼을 눌러 사진화일경로를 입력하십시오!
+<br>
+새로운 사진화일을 올리시면 자동으로 새로운사진으로 덮어씌어집니다.
+</font>
+<br>
+현재사진화일명:<a href=$PHOTODIR$da[photo]>$da[photo]</a>
+</td></tr>
+
+<tr><td width='80'><p>&nbsp;</td> <td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='$SET_WIDTH_MREG' colspan='2'><p align='center'><input type='submit' value='회원정보수정'></td></tr>
+
+<tr><td width='80'><p>&nbsp;</td> <td width='720'><p>&nbsp;</td></tr>
+</table></div>
+</td>
+</tr>
+</table></div>
+</td>
+</tr>
+</table></div>
+<INPUT type=hidden name=pid value=$pid>
+<INPUT type=hidden name=edit_mode value='EDIT'>
+<INPUT type=hidden name=photofilename value='$da[photo]'>
+</form>
+<br>
+</body>
+</html> 
+");
+?>

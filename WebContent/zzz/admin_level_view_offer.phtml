@@ -1,0 +1,84 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_level_view_offer.phtml(구인등록글레벨조정하기)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$dbtcodeseq=$db.$tcode.$seq;	//넘어온정보로 dbtcodeseq 키추출
+
+$QUE="
+		SELECT level, weight FROM $table_jelse[level] 
+		WHERE dbtcodeseq='$dbtcodeseq'";
+//----------------------------------------------------------------------------------
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+$total=mysql_num_rows($RESULT);	 //$total값이 있었으면 업데이트모드 없으면 삽입모드 -- 기본모드는 무조건 삭제쿼리	
+
+if(!$total){$da[level]=0; $da[weight]=100;}
+$TNUM=$da[level];
+$script_level="document.form.level[$TNUM].checked = true";
+
+echo("
+<HTML>
+<HEAD>
+<TITLE>등록글레벨조정</TITLE>
+<SCRIPT language='JavaScript'>
+<!--
+function c(){ //설정체크값로딩
+$script_level
+}
+//-->
+</SCRIPT>
+
+</HEAD>
+<body onLoad='c()'>
+<form name=form method=post action=$sfile[admin_level_apply_offer]>
+시작화면에출력시킬고자할때이곳에서레벨조정
+<br>
+<br><input type=radio name=level value=0>기본모드(시작화면에출력안함)
+<br><input type=radio name=level	value=1>시작화면출력레벨
+<br><input type=radio name=level value=2>시작화면츨력+강조아이콘레벨
+<br><input type=radio name=level value=3>시작화면출력+강조아이콘+강조색제목레벨
+<br>
+<p align=center>경중률<input type=text size=3 maxlength=3 name=weight value=$da[weight]>(낮을수록상단배치)
+<br><br>
+<input type=hidden name=db value=$db>
+<input type=hidden name=tcode value=$tcode>
+<input type=hidden name=seq value=$seq>
+<input type=hidden name=finishday value=$finishday>
+<input type=hidden name=mode value=$mode>
+
+<input type=hidden name=total value=$total> <!--$total값이 있었으면 업데이트모드 없으면 삽입모드 -- 기본모드는 무조건 삭제쿼리//-->
+
+<input type=submit value='적용하기'>
+<input type=button onClick='self.close()' value=창닫기>
+</form>
+</body>
+</html>
+");
+?>

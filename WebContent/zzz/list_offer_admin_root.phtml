@@ -1,0 +1,196 @@
+<?/*php_track_vars*/?> 
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//list_offer_admin_root.phtml(구인회원의 구인등록글 리스트에 운영자가 접근할수 있게 한다.)
+//$grv <= 운영자가 접근할 아이디
+include("inc_initarray.phtml");
+include("html_style.phtml");
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+
+include($MAINMENU);
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[$db],$dbuser,$dbpass,$HOST);
+
+//listinfo 문자열 추출(등록테이블정보를 갖고 있다. 2#4#1#1
+//----------------------------------------------------------------------
+$QUE="SELECT listinfo FROM $table_mem[offer] WHERE id = '$grv'";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$listinfo=mysql_result($RESULT,0,0);
+
+
+//●레벨조정권한영역별 안내메세지
+if($SET_LEVELMODE){
+								$STRTITLECODE="레벨조정";
+								$STRGUIDE="&nbsp;레벨조정(예:<font color=green>1a1a1</font>)◁ 특정 등록글을 사이트처음화면에 보이고자 할때 이 코드를 클릭하시어 레벨조정을 하시면 됩니다.";
+								}else{
+								$STRTITLECODE="코드";
+								$STRGUIDE="코드(예:<font color=green>1a1a1</font>)◁ 특정 등록글을 사이트처음화면에 보이고자 할때 이코드와 함께 관리자에게 초기화면출력 요청을 하시면 됩니다.";
+								}
+
+
+
+//제목부분
+echo("
+<HTML>
+<BODY>
+<HEAD>
+<SCRIPT language='JavaScript'>
+	function del_submit() {
+	document.form.submit();
+	}
+</SCRIPT>
+<title>구인등록목록</title>
+</HEAD>
+<form name='form' method='post' action=$sfile[list_offer_admin_del]>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_ctitle>
+<tr>
+<td width=$SET_WIDTH_HUNT_LIST height='15' valign='bottom'>
+<p align='left'><font color=$SETSUBJECT_CHARCOLOR>『$USER_COOKIE_NAME 구인등록목록』</font></td>
+</tr>
+</table>
+</div>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_LIST bgcolor=$setcolor_ctitle>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='85' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>$STRTITLECODE</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='45' height='20'><p align='center'><font color=$SETOUTLINE_COLOR_CHAR>성별</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='70' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>마감일</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='390' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>제목</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='80' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>최근수정일</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='40' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>조회</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='30' height='25'<p align='center'><font color=$SETOUTLINE_COLOR_CHAR>수정</font>
+<td bgcolor=$SETPYO_BACKCOLOR width='20' height='25'<p align='center'><a href='javascript:del_submit()' onClick=\"return confirm('선택된 등록글을 삭제합니다!')\"><img src=$ICON_DEL border=0></a></font>
+</td>
+</tr>
+");
+//------------------------------------------------------------------------------------------------------
+$listinfoarray=explode("#",$listinfo);
+
+if($listinfo){//--------------등록글이 있을때만
+
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST); //구직등록DB에 연결한다.
+for($i=0;$i<count($listinfoarray);$i++){	//등록된 테이블(직종)에 있는 현재 아이디(id_fk_offermem)를 가진 튜퓰을 가져 온다. 
+$tcode=$listinfoarray[$i];						//tcode(등록테이블)			
+
+//----------------------------------------------------------------------
+$QUE="SELECT seq, name, sex, experience_year, finishday, finishday_no, editdate, title, hit  FROM $table_offer[$tcode] WHERE id_fk_offermem='$grv' ORDER BY seq DESC";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);    //전체행수
+	
+	for($j=0;$j<$total;$j++){	//등록된 테이블(직종)에 있는 현재 아이디(id_fk_offermem)를 가진 튜풀을 가져 온다. 
+	mysql_data_seek($RESULT,$j);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+	$inum++;  //순번표시
+
+	//내용
+	$NUM_salary_year=$da[salary_year];
+	$NUM_sex=$da[sex];
+	$STR_finishday=($da[finishday_no])?"수 시 모 집":$da[finishday];
+
+	$CHECKVALUE=$da[seq]."#".$tcode; //체크박스데이타
+	
+	//리스트출력물을 읽어온 테이블을 찾아내기
+	//-------------------------------------------------------------------
+	if($TCODE != $tcode)	{ 
+										$TCODE=$tcode;
+										$TCODESTR=$TCODESTR.$TCODE."#";
+										}
+	//-------------------------------------------------------------------												
+	//고유코드생성
+	$code="2a".$tcode."a".$da[seq];										
+
+
+	//●inc_dbinit.phtml 에서 $SET_LEVELMODE(레벨조정권한영역)에 다른 등록글관리에서 레벨관리 가능여부결정
+	$LEVELMODESTR=($SET_LEVELMODE) 
+	? "<a href=\"javascript:window_level('db=guin_list&tcode=$tcode&seq=$da[seq]')\"><font color=green><u>$code</u></font></a>"
+	: "$code";
+
+
+	echo("
+	<tr onMouseOver=this.style.backgroundColor='e5e5e5' onMouseOut=this.style.backgroundColor='#f5f5f5' bgcolor='#f5f5f5'>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=green>$LEVELMODESTR</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$STR_finishday</font></a></td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p>&nbsp;<a href=$sfile[list_offer_view]?seq=$da[seq]&tcode=$tcode><font color=$SETPYO_CHARCOLOR>$da[title]</font></a>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[editdate]</font></td>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR>$da[hit]</font></td>
+	<td height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><a href=$sfile[listreg_offere]?seq=$da[seq]&tcode=$tcode><font color=green>수정</font></a></td>
+	<td height='17' valign='bottom'><p align='center'><input type=checkbox name=del[]	 value=$CHECKVALUE></td>
+	</tr>
+");
+}//for-in
+}//for-out
+
+}//if($listinfo){
+
+if(!$listinfo)$inum=0;
+
+//--------------------------------------------------------------------------------------------
+$TCODESTR=substr($TCODESTR,0,-1); //맨뒤 #제거  1#0# => 1#0
+//----------------------------------------------------------------------------------------------
+echo("
+</TABLE></DIV>
+<br>
+<div align=$setpos>
+<TABLE border=0 cellpadding=0 cellspacing=1 bgcolor=$setcolor_ctitle>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_LIST height='30' valign='middle'><p align='center'>
+<font color=$SETPYO_CHARCOLOR>$inum 개의 등록글이 있습니다.</font>
+</td>
+</tr>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_HUNT_LIST height='30' valign='middle'>
+<br><br>
+<font color=$SETPYO_CHARCOLOR>
+$STRGUIDE
+<br><br>
+&nbsp;구인등록글에서 채용마감일이 지났을경우에는 초기화면에 나타나지 않습니다. 이때는 해당 구인등록글 수정에서 마감일을 연장해주시면 됩니다.
+<br><br>
+</font>
+</td>
+</tr>
+
+</div>
+</TABLE>
+</DIV>
+</FORM>
+$setinfo_tail
+</BODY>
+</HTML>
+");
+
+//-------------------------------------------------------------------------------------------
+//$listinfo 와 현재검색테이블($TCODESTR)과 같지 않으면 $listinfo	 업데이트
+//-------------------------------------------------------------------------------------------
+if($TCODESTR != $listinfo){	
+										$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+										$QUE="UPDATE $table_mem[offer] SET listinfo='$TCODESTR'  WHERE id = '$grv'";
+										$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+										}
+?>

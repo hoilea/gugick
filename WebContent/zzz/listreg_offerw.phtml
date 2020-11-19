@@ -1,0 +1,139 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+//
+//listreg_offerw.phtml (구인리스트등록DB저장) - (시작목록테이블(구인만)의 finishday 도 같이 업데이트) 
+//
+include("inc_initarray.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//Str_Plus($delimiter,$origin_str,$plus_str);				//$origin_str.#.$plus_str 리턴
+//Exist_Str($origin_str,$search_str);							//$origin_str 문자열(1#2)에서 $search_str(1)이 있으면 1 없으면 0
+//----------------------------------------------------------------------------------------------------
+function Str_Plus($delimiter,$origin_str,$plus_str){
+			$return_str=(!$origin_str) ? $plus_str : $origin_str.$delimiter.$plus_str;
+			return $return_str;
+			}
+
+//---------------------------------------------------------------------------------------------------
+function Exist_Str($delimiter,$origin_str,$search_str){
+			$returnvalue=0;
+			$comparray=explode($delimiter,$origin_str);
+			for($i=0;$i<count($comparray);$i++){			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+			if($comparray[$i]==$search_str)$returnvalue=1;
+			}
+			return $returnvalue;
+			}
+//---------------------------------------------------------------------------
+
+//근무희망업종 및 희망지역 문자열 만들기 #1#2#3#----------------------
+
+if(count($work_class) > 5)Err_Msg("구인업종은 5개까지 선택가능합니다.");
+if(count($work_class) < 1)Err_Msg("구인업종은 하나이상 선택해야 합니다.");
+
+if(count($work_area) > 4)Err_Msg("근무지역은 5개까지 선택가능합니다.");
+if(count($work_area) < 1)Err_Msg("근무지역은 하나이상 선택해야 합니다.");
+
+for($i=0;$i<count($work_class);$i++){
+													$class_str=$class_str."#".$work_class[$i];
+													}
+													$work_class=$class_str."#";
+														
+for($i=0;$i<count($work_area);$i++){
+													$area_str=$area_str."#".$work_area[$i];
+													}
+													$work_area=$area_str."#";
+
+//------------------------------------------------------------------------
+$finishday=$finish_yyyy."-".$finish_mm."-".$finish_dd;				//마감일조합	
+
+
+//시작목록테이블(구인만)finishday수정
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$dbtcodeseq="guin_list".$tcode.$seq;									//finishday를 수정할 시작목록테이블의 대상  dbtcodeseq 키 생성
+$LEVEL_finishday=($finishday_no) ? "2100-08-30":$finishday;	//시작목록에사용될날짜로 수시모집이면 마감일이 3000-08-30 로 업데이트한다.
+
+//구인등록글을 수정한다면 무조건 시작목록테이블에서 해당 $dbtcodeseq 의 마감일도 수정
+$QUE="UPDATE $table_jelse[level] SET finishday='$LEVEL_finishday' WHERE dbtcodeseq='$dbtcodeseq' AND whatmode=0"; 
+//echo $QUE; exit;
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+
+
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+//수정모드이면 수정작업만 하고 종료
+if($edit_mode){
+					$QUE="
+					UPDATE $table_offer[$tcode] 
+					SET 	name='$name',
+							email='$email',
+							tel='$tel',
+							work_kind='$work_kind',
+							sex='$sex',
+							educational_last='$educational_last',
+							salary_year='$salary_year',
+							salary_monthly='$salary_monthly',
+							experience_year='$experience_year',
+							experience_for='$experience_for',
+							age_limit='$age_limit',
+							finishday='$finishday',
+							finishday_no='$finishday_no',
+							editdate=CURDATE(),
+							title='$title',
+							content='$content',
+							work_class='$work_class',
+							work_area='$work_area'
+				    WHERE seq = $seq
+						   ";
+					//echo $QUE;exit;
+					$RESULT=mysql_query($QUE) or die(mysql_error($TC));	
+					echo "<META http-equiv='refresh' content='0;url=$sfile[index]'>";
+					exit;
+					}
+
+$QUE="
+INSERT INTO $table_offer[$tcode] 
+VALUES('','$USER_COOKIE_OFFER', '$name', '$email', '$tel', '$work_kind', '$sex', '$educational_last',
+'$salary_year','$salary_monthly','$experience_year','$experience_for','$age_limit','$finishday','$finishday_no', CURDATE(), '$title','$content','$work_class','$work_area','1')";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+
+//구인회원테이블에 리스트등록정보문자열불러오기
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+$QUE="SELECT listinfo FROM $table_mem[offer] WHERE id = '$USER_COOKIE_OFFER'";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+$origin_str=mysql_result($RESULT,0,0);
+
+$existvalue=Exist_Str("#",$origin_str,$tcode);//이미 존재하는 테이블인지 조사
+
+if(!$existvalue){	//새로운 테이블 일때만 $listinfo 문자열뒤에 현재등록정보 붙히기
+//------------------------------------------------------------------------
+$listinfo=Str_Plus("#",$origin_str,$tcode);
+//echo $listinfo;
+$QUE="UPDATE $table_mem[offer] SET listinfo='$listinfo' WHERE id = '$USER_COOKIE_OFFER'";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+}
+echo("<META http-equiv='refresh' content='0;url=$sfile[list_offer]?tcode=$tcode&work_area=99&work_kind=99&sex=99&experience_year=99'>");
+?>

@@ -1,0 +1,221 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_se_tup.phtml (환경설정)
+include("inc_initarray.phtml"); 
+include("html_style.phtml");
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+
+//----------------------------------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//----------------------------------------------------------------------------------------------------
+
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$QUE="SELECT  sethtml_shead, sethtml_stail, sethtml_rule, sethtml_banner	FROM $table_jelse[setup]";
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+
+$SELECTEDLEFT=(trim($setpos)=="left")?"selected":"";
+$SELECTEDCENTER=(trim($setpos)=="right")?"selected":"";
+
+
+//환경설정 쿠키값이 없으면 에러메세지출력
+//if(!$setcolor_mtitlechar && !$setcolor_mtitlebg)Err_Msg("환경설정값들이 로딩되지 않았습니다! 사이트의 메인페이지를 먼저 출력하십시오!");
+
+
+echo ("
+<html>
+<head>
+<SCRIPT language='JavaScript'>
+<!--
+
+//빈칸체크------------------
+function isFilled( elm ) {
+if ( elm.value == '' || elm.value == null ) 
+return false;
+else
+return true;
+}
+//------------------------------------------
+function isReady( form ) {
+//-------------------------------------------
+if ( isFilled(document.form.Asetcolor_mtitlechar) == false ) {
+alert('상단메인메뉴글자색미입력');
+document.form.Asetcolor_mtitlechar.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.Asetcolor_mtitlebg) == false ) {
+alert('상단메인메뉴배경색미입력');
+document.form.Asetcolor_mtitlebg.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.Asetcolor_mtitlebg2) == false ) {
+alert('상단메인메뉴배경색(하단)미입력');
+document.form.Asetcolor_mtitlebg2.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.Asetcolor_ctitle) == false ) {
+alert('표(테이블)제목셀색미입력');
+document.form.Asetcolor_ctitle.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.Asetcolor_outline) == false ) {
+alert('표(테이블)외각선색미입력');
+document.form.Asetcolor_outline.focus();
+return false;
+}
+//-----------------------------------------
+if (document.form.Asetsize_photowidth.value == '0'  || document.form.Asetsize_photowidth.value == '')
+ {
+alert('구직자증명사진사이즈(폭)미입력');
+document.form.Asetsize_photowidth.focus();
+return false;
+} 
+//-------------------------------------------
+if (document.form.Asetsize_photoheight.value == '0'  || document.form.Asetsize_photoheight.value == '')
+ {
+alert('구직자증명사진사이즈(높이)미입력');
+document.form.Asetsize_photoheight.focus();
+return false;
+} 
+//-------------------------------------------
+if (document.form.Asetnum_list.value == '0' || document.form.Asetnum_list.value == '')
+ {
+alert('구인/구직목록최대줄수미입력');
+document.form.Asetnum_list .focus();
+return false;
+}
+//-------------------------------------------
+if (document.form.Asetnum_listmem.value == '0' || document.form.Asetnum_listmem.value == '')
+ {
+alert('회원관리목록최대줄수미입력');
+document.form.Asetnum_listmem .focus();
+return false;
+} 
+}
+//-->
+</SCRIPT>
+</head>
+
+<body bgcolor='white' text='black' link='blue' vlink='purple' alink='red'>
+<form name='form' method='post' onsubmit='return isReady(form)'  action=$sfile[admin_se_tupw]>
+
+<div align=center>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=black>
+<tr>
+<td bgcolor=whitesmoke width='800' height='20'><p align='left'>
+<font color=$SETOUTLINE_COLOR_CHAR>
+<a href=$sfile[admin_main]>관리자메뉴</a> | <a href=$sfile[index]>시작화면</a>
+</font></td>
+</tr>
+</table>
+</div>
+<br>
+<br>
+
+
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='800' height='20' bgcolor='white'>
+<tr>
+<td width='150' height='15'>상단메인메뉴글자색</td><td><input type=text name=Asetcolor_mtitlechar value=$setcolor_mtitlechar></td>
+</tr>
+<tr>
+<td>상단메인메뉴배경색</td><td><input type=text name=Asetcolor_mtitlebg value=$setcolor_mtitlebg></td>
+</tr>
+<tr>
+<td>상단메인메뉴배경색(하단)</td><td><input type=text name=Asetcolor_mtitlebg2 value=$setcolor_mtitlebg2></td>
+</tr>
+<tr>
+<td>표(테이블)제목셀색</td><td><input type=text name=Asetcolor_ctitle value=$setcolor_ctitle></td>
+</tr>
+<tr>
+<td>표(테이블)외각선색</td><td><input type=text name=Asetcolor_outline value=$setcolor_outline></td>
+</tr>
+<tr>
+<td>툴정렬위치</td><td>
+<select name='Asetpos'>
+		<option value='center' $SELECTEDCENTER>중앙</option>
+		<option value='left' $SELECTEDLEFT>왼쪽</option>
+</select>
+</td>
+</tr>
+<tr>
+<td>구직자증명사진사이즈</td><td><input type=text  size=4 name=Asetsize_photowidth value=$setsize_photowidth>(폭) X <input type=text size=4 name=Asetsize_photoheight value=$setsize_photoheight>(높이)</td>
+</tr>
+<tr>
+<td>구인/구직목록최대줄수</td><td><input type=text name=Asetnum_list value=$setnum_list></td>
+</tr>
+<tr>
+<td>회원관리목록최대줄수</td><td><input type=text name=Asetnum_listmem value=$setnum_listmem></td>
+</tr>
+<tr>
+<td><br>삽입HTML강제삭제<br><br></td>
+<td><br>
+<a href=$sfile[admin_htmldel]?field=sethtml_shead onClick=\"return confirm('시작화면상단HTML을 삭제하고 초기화 합니다!')\"><font color=green><u>/시작화면상단HTML강제삭제</u>/</font></a>
+<a href=$sfile[admin_htmldel]?field=sethtml_stail	 onClick=\"return confirm('시작화면하단HTML을 삭제하고 초기화 합니다!')\"><font color=green><u>/시작화면하단HTML강제삭제</u>/</font></a>
+<a href=$sfile[admin_htmldel]?field=sethtml_rule onClick=\"return confirm('회원가입약관HTML을 삭제하고 초기화 합니다!')\"><font color=green><u>/회원가입약관HTML강제삭제</u>/</font></a>
+<br><br></td>
+</tr>
+<tr>
+<td width='150' height='15'>시작화면상단HTML</td><td width='650' height='15'><textarea name=Asethtml_shead rows='10' cols=80>$da[sethtml_shead]</textarea></td>
+</tr>
+
+<tr>
+<td width='150' height='15'>시작화면하단HTML</td><td width='650' height='15'><textarea name=Asethtml_stail rows='10' cols=80>$da[sethtml_stail]</textarea></td>
+</tr>
+
+<tr>
+<td width='150' height='15'>회원가입약관HTML</td><td width='650' height='15'><textarea name=Asethtml_rule rows='10' cols=80>$da[sethtml_rule]</textarea></td>
+</tr>
+
+<tr>
+<td width='150' height='15'>배너광고HTML<br><font color=green>간단한HTML으로삽입<br>
+</font><font color=red>따옴표입력금지</font></td><td width='650' height='15'><textarea name=Asethtml_banner rows='10' cols=80>$da[sethtml_banner]</textarea></td>
+</tr>
+
+<tr>
+<td width='150' height='15'>툴상단꾸미기HTML<br>(메인메뉴윗부분HTML)<br><font color=green>간단한HTML으로삽입<br>
+</font><font color=red>따옴표입력금지</font></td>
+<td width='650' height='15'><textarea name=Asetinfo_head rows='5' cols=80>$setinfo_head</textarea></td>
+</tr>
+
+<tr>
+<td width='150' height='15'>툴하단꾸미기HTML<br>(회사명/전화/메일등등)<br><font color=green>간단한HTML으로삽입<br>
+</font><font color=red>따옴표입력금지</font></td>
+<td width='650' height='15'><textarea name=Asetinfo_tail rows='5' cols=80>$setinfo_tail</textarea></td>
+</tr>
+</table>
+</div>
+
+<p align=center><input type=submit value=저장하기>
+</form>
+</body>
+</html>
+");
+?>

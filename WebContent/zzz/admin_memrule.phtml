@@ -1,0 +1,59 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_memrule.phtml	(회원가입약관)
+include("inc_initarray.phtml");
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//환경설정DB연결 <--- 회원가입약관HTML불러오기
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT sethtml_rule
+			FROM	 $table_jelse[setup]
+						 ";
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da_html = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+include("html_style.phtml");
+include($MAINMENU);
+echo ("
+$da_html[sethtml_rule]
+<div align=$setpos>
+<table border=0 cellpadding=0 cellspacing=0 width=800>
+<tr>
+<td width=800>
+<center>
+<a href=$mode><img src=$ICON_AGREE border=0></a>
+<a href='#' onClick='history.back()'><img src=$ICON_CANCEL border=0></a>
+</center>
+</td>
+</tr>
+</table>
+</div>
+$setinfo_tail
+</BODY>
+</HTML>
+");
+?>

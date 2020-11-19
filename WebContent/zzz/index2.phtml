@@ -1,0 +1,234 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+include("inc_initarray.phtml"); //INDEX2.PHTML
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//환경설정DB는 항상연결 <--- 시작화면 상단HTML/하단HTML불러오기
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+$QUE="
+			SELECT sethtml_shead, sethtml_stail
+			FROM	 $table_jelse[setup]
+						 ";
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da_html = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+//==================================================================================
+if(!$setcolor_mtitlechar){//사이트를 첫접속시에만 환경설정(색깔등등)을 쿠키로 저장한다.
+$QUE="
+			SELECT setcolor_mtitlechar,
+						 setcolor_mtitlebg,
+						 setcolor_mtitlebg2,
+						 setcolor_ctitle,
+						 setcolor_outline,
+						 setpos,
+						 setnum_list,
+						 setnum_listmem,
+						 setsize_photowidth,
+						 setsize_photoheight,
+						 setinfo_tail,
+						 sethtml_banner,
+						 setinfo_head
+			FROM	 $table_jelse[setup]
+						 ";
+//echo $QUE;
+						$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+						$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+//첫접속시에만 쿠키설정
+setcookie("setcolor_mtitlechar",$da[setcolor_mtitlechar]);	//메뉴글자색
+setcookie("setcolor_mtitlebg",$da[setcolor_mtitlebg]);			//메뉴배경색
+setcookie("setcolor_mtitlebg2",$da[setcolor_mtitlebg2]);		//메뉴2배경색
+setcookie("setcolor_ctitle",$da[setcolor_ctitle]);					//제목셀배경색
+setcookie("setcolor_outline",$da[setcolor_outline]);			//외각선색
+setcookie("setpos",$da[setpos]);										//툴정렬
+setcookie("setnum_list",$da[setnum_list]);						//구인구직목록최대라인수
+setcookie("setnum_listmem",$da[setnum_listmem]);			//회원관리목록최대라인수
+setcookie("setsize_photowidth",$da[setsize_photowidth]);	//구직회원증명사진폭
+setcookie("setsize_photoheight",$da[setsize_photoheight]);//구인회원증명사진높이
+setcookie("setinfo_tail",$da[setinfo_tail]);							//툴하단HTML(상호명/연락처등등)
+setcookie("sethtml_banner",$da[sethtml_banner]);				//배너광고HTML
+setcookie("setinfo_head",$da[setinfo_head]);						//툴상단HTML
+	
+//현재페이지에서 사용될 환경변수
+$setcolor_mtitlechar=$da[setcolor_mtitlechar];
+$setcolor_mtitlebg=$da[setcolor_mtitlebg];
+$setcolor_mtitlebg2=$da[setcolor_mtitlebg2];
+$setcolor_ctitle=$da[setcolor_ctitle];
+$setcolor_outline=$da[setcolor_outline];
+$setpos=$da[setpos];
+$setnum_list=$da[setnum_list];
+$setnum_list=$da[setnum_listmem];
+$setsize_photowidth=$da[setsize_photowidth];
+$setsize_photoheight=$da[setsize_photoheight];
+$setinfo_tail=$da[setinfo_tail];
+$sethtml_banner=$da[sethtml_banner];
+$setinfo_head=$da[setinfo_head];
+}//if~out
+//==================================================================================
+
+
+include("html_style.phtml");
+include($MAINMENU);
+
+
+if($jsadmincookieval=="$ADMINID$ADMINPASSWORD")$MEMOSTR="↙";
+echo("
+
+$da_html[sethtml_shead]	<!--//시작화면상단HTML출력//-->
+
+<div align=left>
+<table border='0' cellpadding='0' cellspacing='1' width=550 bgcolor=$SETPYO_BACkCOLOR>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width='550' height='20'><p align='left'><font color=$SETOUTLINE_COLOR_CHAR><img src=$ICON_TITLEGUIN border=0></font></td>
+</td>
+</tr>
+");
+
+//구인 level DB읽어오기(먼저 구인(whatmode=0)튜플만불로온다.) whatmode=0 <-구인  1<-구직
+//==========================================================================
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+//==========================================================================
+$QUE="
+		SELECT tcode, seq, finishday, level FROM $table_jelse[level] WHERE whatmode=0 AND TO_DAYS(finishday) >= TO_DAYS(CURDATE()) ORDER BY weight
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);	
+
+//구인리스트DB읽어오기
+//==========================================================================
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+//==========================================================================
+for($i=0;$i<$total;$i++){	 
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+	$tcode=$da[tcode];		//해당 level 튜플의 tcode명추출
+	$seq=$da[seq];			//해당 level 튜플의 seq명추출
+	
+//--------------------------------------------------------------------------
+switch($da[level]){
+							case 2: $STR_hot="<img src=$ICON_HOT border=0>";break;
+							case 3: $STR_hot="<img src=$ICON_HOT border=0>";$STR_fontopen="<font color=green>";$STR_fontclose="</font>";break;
+							}
+//--------------------------------------------------------------------------
+	
+$QUE="SELECT title, work_kind, experience_year, salary_year, salary_monthly FROM $table_offer[$tcode] WHERE seq=$seq";	
+$RESULTOFFER=mysql_query($QUE) or die(mysql_error($table_connect));
+$dalist = mysql_fetch_array($RESULTOFFER);   //결과를 한줄씩 배열로 넣는다.
+
+
+//---------------------
+$NUM_work_kind=$dalist[work_kind];					//근무형태
+$WORK_KIND=($dalist[work_kind]==0)?"":"$STR_work_kind[$NUM_work_kind]/";
+
+$NUM_experience_year=$dalist[experience_year];		//구직등록자경력추출
+
+$NUM_salary_year=(int)$dalist[salary_year]+1;			//희망연봉		
+$SARARY=($dalist[salary_monthly])? "월".$dalist[salary_monthly]."만":"연봉".$STR_salary_year[$NUM_salary_year];
+$STR_experience_year=($NUM_experience_year==2)?"경력/":"";	//경력사원일때만 경력이라고 출력
+
+echo("
+	<tr>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR>
+	<a href=\"javascript:window_level('db=guin_list&tcode=$tcode&seq=$da[seq]')\">$MEMOSTR</a>
+	<a href=$sfile[list_offer_view]?tcode=$tcode&seq=$da[seq]><font color=$setcolor_mtitlebg> $STR_fontopen $dalist[title]($WORK_KIND$STR_experience_year$SARARY) $STR_hot  $STR_fontclose </font></a>
+	</td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR></font></td>
+	</tr>
+	");
+}//for
+
+
+
+
+//구직제목
+//==============================================================================
+echo("
+</table>
+</div>
+
+<div align=left>
+<table border='0' cellpadding='0' cellspacing='1' width=550 bgcolor=white>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR><img src=$ICON_TITLEGUGIC border=0></font></td>
+</tr>
+");
+//구직 level DB읽어오기(먼저 구인(whatmode=1)튜플만불로온다.) whatmode=0 <-구인  1<-구직
+//==========================================================================
+$TC=Db_Connect($dfile[jelse],$dbuser,$dbpass,$HOST);
+//==========================================================================
+$QUE="
+		SELECT tcode, seq, finishday, level FROM $table_jelse[level] WHERE whatmode=1 ORDER BY weight
+		";
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);	
+
+//구직리스트DB읽어오기
+//==========================================================================
+$TC=Db_Connect($dfile[gugic_list],$dbuser,$dbpass,$HOST);
+//==========================================================================
+for($i=0;$i<$total;$i++){	 
+	mysql_data_seek($RESULT,$i);
+	$da = mysql_fetch_array($RESULT);   //결과를 한줄씩 배열로 넣는다.
+
+	$tcode=$da[tcode];	//해당 level 튜플의 tcode명추출
+	$seq=$da[seq];			//해당 level 튜플의 seq명추출
+		
+$STR_hot="";$STR_fontopen="";$STR_fontclose=""; //초기화
+//--------------------------------------------------------------------------
+switch($da[level]){
+							case 2: $STR_hot="<img src=$ICON_HOT border=0>";break;
+							case 3: $STR_hot="<img src=$ICON_HOT border=0>";$STR_fontopen="<font color=green>";$STR_fontclose="</font>";break;
+							}
+//--------------------------------------------------------------------------
+
+$QUE="SELECT title,sex, experience_year, salary_year, salary_monthly FROM $table_hunt[$tcode] WHERE seq=$seq";	
+$RESULTOFFER=mysql_query($QUE) or die(mysql_error($table_connect));
+$dalist = mysql_fetch_array($RESULTOFFER);   //결과를 한줄씩 배열로 넣는다.
+
+//---------------------
+$NUM_sex=$dalist[sex];										//구직등록자성별번추출
+$NUM_experience_year=$dalist[experience_year]; //구직등록자경력추출
+$NUM_salary_year=$dalist[salary_year];				//희망연봉		
+$SARARY=($dalist[salary_monthly])?"월".$dalist[salary_monthly]."만": "연봉".$STR_salary_year[$NUM_salary_year];
+$STR_experience_year=($NUM_experience_year==1)?"신입/":"경력/";	//경력사원일때만 경력이라고 출력
+echo("
+	<tr>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='left'><font color=$SETPYO_CHARCOLOR>
+	<a href=\"javascript:window_level('db=gugic_list&tcode=$tcode&seq=$da[seq]')\">$MEMOSTR</a>
+	<a href=$sfile[list_hunt_view]?seq=$da[seq]&tcode=$tcode><font color=$setcolor_mtitlebg>$STR_fontopen $dalist[title] ($STR_sex[$NUM_sex]/$STR_experience_year$SARARY)$STR_fontclose </font>$STR_hot</a>
+	</td>
+	<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR></font></td>
+	</tr>
+	");
+}//for
+
+
+echo("
+</table>
+</div>
+$da_html[sethtml_stail]	<!--//시작화면하단HTML출력//-->
+");
+?>

@@ -1,0 +1,516 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//listreg_offer.phtml(구인리스트에 등록폼)
+include("inc_initarray.phtml");
+include("./html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+
+if(!$USER_COOKIE_OFFER)Err_Msg("로그인을 먼저 하십시오!");
+
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+
+$QUE="
+			SELECT company, work_area, work_class, paper 
+			FROM $table_mem[offer] 
+			WHERE id='$USER_COOKIE_OFFER'";
+
+$RESULT= mysql_query($QUE) or die(mysql_error($TC));
+$da = mysql_fetch_array($RESULT);		//결과를 한줄씩 배열로 넣는다.
+
+$dstr_class=explode("#",$da[work_class]);
+for($i=1;$i<count($dstr_class)-1;$i++){
+													$check_num=$listreg_offer_class_start+$dstr_class[$i];
+													$script_class_str=$script_class_str."document.forms[0].elements[".$check_num."].checked = true;  ";
+													}
+
+$dstr_area=explode("#",$da[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$listreg_offer_area_start+$dstr_area[$i];
+													$script_area_str=$script_area_str."document.forms[0].elements[".$check_num."].checked = true;  ";
+													}
+//-------------------------------------------------------------
+
+
+echo("
+<html>
+<head>
+<meta http-equiv='content-type' content='text/html; charset=euc-kr'>
+<title>구인등록</title>
+<link href='job.css' rel='stylesheet' type='text/css'>
+<SCRIPT language='JavaScript'>
+<!--
+
+function c(){ //설정체크값로딩
+
+$script_class_str
+$script_area_str
+
+}
+
+
+ey1=new Array(20);
+ey1[0]=new Option('경력년수무관','0',true,true)
+ey1[1]=new Option('1개월','1')
+ey1[2]=new Option('3개월','2')
+ey1[3]=new Option('6개월','3')
+ey1[4]=new Option('1년','4')
+ey1[5]=new Option('2년','5')
+ey1[6]=new Option('3년','6')
+ey1[7]=new Option('4년','7')
+ey1[8]=new Option('5년','8')
+ey1[9]=new Option('6년','9')
+ey1[10]=new Option('7년','10')
+ey1[11]=new Option('8년','11')
+ey1[12]=new Option('9년','12')
+ey1[13]=new Option('10년','13')
+ey1[14]=new Option('15년','14')
+ey1[15]=new Option('20년','15')
+ey1[16]=new Option('25년','16')
+ey1[17]=new Option('30년이상','17')
+
+function eyrun(){
+						sel=form.experience_for;
+						for(var i=0;i<17;i++)sel.options[i]=ey1[i]
+						}
+		
+//-------------------------------------------
+//빈칸체크------------------
+function isFilled( elm ) {
+if ( elm.value == '' || elm.value == null ) 
+return false;
+else
+return true;
+}
+
+//숫자/문자체크-------------------------
+function isInt( elm ) {
+var elmstr = elm.value + '';
+if ( elmstr == '' )
+return false;
+
+for ( var i=0; i<elmstr.length; i++ ) {
+if ( elmstr.charAt(i) < '0' || elmstr.charAt(i) > '9' )
+return false;
+}
+return true;
+}
+//-------------------------------------------
+
+function isReady( form ) {
+//-------------------------------------------
+if ( isFilled(document.form.name) == false ) {
+alert('담당자이름을 입력하세요!');
+document.form.name.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.email) == false ) {
+alert('담당자메일주소를 입력하세요!');
+document.form.email.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.tel) == false ) {
+alert('담당자연락처를 입력하세요!');
+document.form.tel.focus();
+return false;
+}
+//-----------------------------------------
+if (document.form.finish_mm.value == '-' && document.form.finishday_no.checked != true)
+ {
+alert('수시모집이 아니면 마감월을 선택하십시오!');
+document.form.finish_mm.focus();
+return false;
+} 
+//-------------------------------------------
+if (document.form.finish_dd.value == '-' && document.form.finishday_no.checked != true)
+ {
+alert('수시모집이 아니면 마감일을 선택하십시오!');
+document.form.finish_dd.focus();
+return false;
+} 
+//-------------------------------------------
+if (document.form.age_limit.value.length < 4 && document.form.age_limit.value != '') {
+alert('나이제한 입력시 4자리(예: 1977)로 기입하셔야 합니다.');
+document.form.age_limit.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.title) == false ) {
+alert('채용제목을 입력하세요!');
+document.form.title.focus();
+return false;
+}
+//-------------------------------------------
+if ( isFilled(document.form.content) == false ) {
+alert('모집요강을 입력하세요!');
+document.form.content.focus();
+return false;
+}
+//----------------------------------------------------
+if (document.form.educational_last.value == '--')
+ {
+alert('최종학력을 선택하십시오! 이력서항목중 최종학력과 학력사항란을 필수 항목입니다.');
+document.form.educational_last.focus();
+return false;
+} 
+}
+//-->
+</SCRIPT>
+</head>
+
+<body bgcolor='white' text='black' link='blue' vlink='purple' alink='red' onLoad='c()'>
+<form name='form' method='post' onsubmit='return isReady(form)' action=$sfile[listreg_offerw]>
+<p align='center'><font color=$SETPYO_CHARCOLOR>『구인등록』$table_title[$tcode]</font><br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW  bgcolor=$setcolor_outline>
+<tr><td width='800' valign='top' bgcolor='white'><div align='center'><table border='0' cellpadding='0' cellspacing='1' width='800' bgcolor='white' bordercolor='white'>
+<tr><td width='80'><p align='right'>&nbsp;</td><td width='720'><p align='right'>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○회사명</td><td width='720'><p><font color=$SETPYO_CHARCOLOR>$da[company]</td></tr>
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○담당자이름</td><td width='700' height='17'><p align='left'>
+<font color=$SETPYO_CHARCOLOR>
+<input type='text' name='name' maxlength='10' size='13' class='colorbox' tabindex='1'> &nbsp;&nbsp;&nbsp;&nbsp;담당자메일
+<input type='text' name='email' size='24' class='colorbox' tabindex='2'> &nbsp;&nbsp;&nbsp;&nbsp;연락처
+<input type='text' name='tel' maxlength='14' size='22' class='colorbox' tabindex='3'></td></tr>
+
+<tr><td width='80'><p align='right'>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○근무형태</td><td width='720'><p>
+<font color=$SETPYO_CHARCOLOR>
+<input type='radio' tabindex='4' name='work_kind' value='0' checked>무관 &nbsp;&nbsp; 
+<input type='radio' tabindex='5' name='work_kind' value='1'>정규직 &nbsp;&nbsp;&nbsp; 
+<input type='radio' tabindex='6' name='work_kind' value='2'>&nbsp;비정규직 &nbsp;&nbsp; 
+<input type='radio' tabindex='7' name='work_kind' value='3'>&nbsp;아르바이트</td>
+</tr><tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○성별</td><td width='720'><p>
+<font color=$SETPYO_CHARCOLOR>
+<input type='radio' tabindex='8' name='sex' value='0' checked>무관&nbsp;&nbsp;&nbsp;
+<input type='radio' tabindex='9' name='sex' value='1'>남 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+<input type='radio' tabindex='10' name='sex' value='2'>여</td></tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○학력제한<br> </td>
+<td width='720'><p>
+<font color=$SETPYO_CHARCOLOR>
+<select name='educational_last' tabindex='11' class='colorbox'>
+						<option value='0'>학력무관</option>
+                        <option value='1'>초등학교졸업</option>
+                        <option value='2'>중학교졸업</option>
+                        <option value='3'>고등학교졸업</option>
+                        <option value='4'>대학교졸업(2년)</option>
+                        <option value='5'>대학교졸업(4년)</option>
+                        <option value='6'>대학원졸업</option></select> &nbsp;&nbsp;지급연봉
+
+<select name='salary_year' tabindex='12' class='colorbox'>
+                        <option value='0'>면접후결정</option>
+                        <option value='1'>700~1000</option>
+                        <option value='2'>1000~1200</option>
+                        <option value='3'>1200~1500</option>
+                        <option value='4'>1500~2000</option>
+                        <option value='5'>2000~2500</option>
+                        <option value='6'>2500~3000</option>
+                        <option value='7'>3000~3500</option>
+                        <option value='8'>3500~4000</option>
+                        <option value='9'>4000~6000</option>
+                        <option value='10'>6000~9000</option>
+                        <option value='11'>9000이상</option></select> &nbsp;&nbsp;월급여 
+
+<input type='text' name='salary_monthly' maxlength=3 size='3' class='colorbox'>만원 &nbsp;
+<font color=green> ☜ 월급제(임시직/아르바이트)가 아니면 입력 하지 마십시오.</font></td>
+                </tr>
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○경력</td>
+<td width='720'><p align='left'>
+<font color=$SETPYO_CHARCOLOR>
+<input type='radio' tabindex='14' name='experience_year' value='0' checked>무관 &nbsp;
+<input type='radio' tabindex='15' name='experience_year' value='1'>&nbsp;신입 &nbsp; 
+<input type='radio' tabindex='16' name='experience_year' value='2' onClick='eyrun()'>경력&nbsp;
+
+ <select name='experience_for' class='colorbox'></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+</tr>
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+
+<tr>
+<td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○나이제한</td>
+<td width='720'><p align='left'>
+<font color=$SETPYO_CHARCOLOR>
+<input type='text' name='age_limit' maxlength='4' size='5' class='colorbox' tabindex='18'>년 이후출생자 (예:1977) - 나이제한이 없으면 입력하지 마세요</td>
+</tr>
+
+<tr><td width='80'><p align='right'>&nbsp;</td><td width='720'><p align='left'>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○모집마감일</td><td width='720'><p align='left'>
+<font color=$SETPYO_CHARCOLOR>
+<select name='finish_yyyy' tabindex='12' class='colorbox'>
+                        <option value='$STR_year[0]'>$STR_year[0]</option>
+                        <option value='$STR_year[1]'>$STR_year[1]</option>
+                        <option value='$STR_year[2]'>$STR_year[2]</option>
+                        <option value='$STR_year[3]'>$STR_year[3]</option>
+                        <option value='$STR_year[4]'>$STR_year[4]</option>
+                        <option value='$STR_year[5]'>$STR_year[5]</option>
+                        <option value='$STR_year[6]'>$STR_year[6]</option>
+                        <option value='$STR_year[7]'>$STR_year[7]</option>
+                        <option value='$STR_year[8]'>$STR_year[8]</option>
+                        <option value='$STR_year[9]'>$STR_year[9]</option>
+                        <option value='$STR_year[10]'>$STR_year[10]</option>
+                        <option value='$STR_year[11]'>$STR_year[11]</option></select>년 &nbsp;
+
+<select name='finish_mm' tabindex='12' class='colorbox'>
+                        <option value='-'>-</option>
+						<option value='01'>1</option>
+                        <option value='02'>2</option>
+                        <option value='03'>3</option>
+                        <option value='04'>4</option>
+                        <option value='05'>5</option>
+                        <option value='06'>6</option>
+                        <option value='07'>7</option>
+                        <option value='08'>8</option>
+                        <option value='09'>9</option>
+                        <option value='10'>10</option>
+                        <option value='11'>11</option>
+                        <option value='12'>12</option></select>월 &nbsp;
+
+<select name='finish_dd' tabindex='12' class='colorbox'>
+                        <option value='-'>-</option>
+						<option value='01'>1</option>
+                        <option value='02'>2</option>
+                        <option value='03'>3</option>
+                        <option value='04'>4</option>
+                        <option value='05'>5</option>
+                        <option value='06'>6</option>
+                        <option value='07'>7</option>
+                        <option value='08'>8</option>
+                        <option value='09'>9</option>
+                        <option value='10'>10</option>
+                        <option value='11'>11</option>
+                        <option value='12'>12</option>
+                        <option value='13'>13</option>
+                        <option value='14'>14</option>
+                        <option value='15'>15</option>
+                        <option value='16'>16</option>
+                        <option value='17'>17</option>
+                        <option value='18'>18</option>
+                        <option value='19'>19</option>
+                        <option value='20'>20</option>
+                        <option value='21'>21</option>
+                        <option value='22'>22</option>
+                        <option value='23'>23</option>
+                        <option value='24'>24</option>
+                        <option value='25'>25</option>
+                        <option value='26'>26</option>
+                        <option value='27'>27</option>
+                        <option value='28'>28</option>
+                        <option value='29'>29</option>
+                        <option value='30'>30</option>
+                        <option value='31'>31</option></select>일 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<input type='checkbox' name='finishday_no' value='1'><font color=green>수시모집시 체크하세요</font></td>
+</tr>
+
+<tr><td width='80'><p>&nbsp;</td><td width='720'><p>&nbsp;</td></tr>
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○채용제목</td><td width='720'><p align='left'>
+<font color=$SETPYO_CHARCOLOR>
+<input type='text' name='title' size='62' class='colorbox'>(예: 네트웍설비기사/서버구축) ☜ 빠른검색시 사용됨</td>
+</tr>
+
+<tr><td width='80'><p align='left'><font color=$SETPYO_CHARCOLOR>○모집요강</td><td width='720'><p align='left'><textarea name='content' rows='20' cols='100' class='colorbox'>
+$da[paper]
+</textarea></td></tr>
+
+<tr><td width='80' colspan='2'><p>&nbsp;</td></tr>
+</table></div>
+</td>
+</tr>
+</table></div>
+
+
+
+<br><br>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW  bgcolor=$setcolor_outline>
+<font color='green'><b>[채용업종선택] </b></font>
+<font color=$SETPYO_CHARCOLOR>☜ 5개까지 선택가능. 구직자가 특정업종을 검색할때 아래에서 체크된 업종에 포함된다면<br>
+귀하의 구인정보가 검색되도록 하는데 이용됩니다.<br> 
+<tr><td width='256' valign='top' bgcolor='white'>
+
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[업종별]</b></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='0'><font color=$SETPYO_CHARCOLOR>건설/토목/건축/조경<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='1'><font color=$SETPYO_CHARCOLOR>광고(기획/홍보/영업/제작)</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='2'><font color=$SETPYO_CHARCOLOR>교육/강사/학원</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='3'><font color=$SETPYO_CHARCOLOR>농업/수산업/축산업/광업</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='4'><font color=$SETPYO_CHARCOLOR>기계/자동차/금속</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='5'><font color=$SETPYO_CHARCOLOR>관광/호텔/여행/항공<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='6'><font color=$SETPYO_CHARCOLOR>금융기관(은행/금고/증권/보험)<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='7'><font color=$SETPYO_CHARCOLOR>건강/병원/의약/화장품<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='8'><font color=$SETPYO_CHARCOLOR>공공기관/공사/공공서비스/협회</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='9'><font color=$SETPYO_CHARCOLOR>방송/언론<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='10'><font color=$SETPYO_CHARCOLOR>출판/인쇄/편집</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='11'><font color=$SETPYO_CHARCOLOR>목재/제지</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='12'><font color=$SETPYO_CHARCOLOR>유통/운송/음식료</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='13'><font color=$SETPYO_CHARCOLOR>석유/화학/에너지<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='14'><font color=$SETPYO_CHARCOLOR>섬유/의류/패션&nbsp; <br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='15'><font color=$SETPYO_CHARCOLOR>전기/전자/컴퓨터<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='16'><font color=$SETPYO_CHARCOLOR>용역/기타서비스<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td> </tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[기타]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='17'><font color=$SETPYO_CHARCOLOR>임원</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='18'><font color=$SETPYO_CHARCOLOR>아르바이트<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='19'><font color=$SETPYO_CHARCOLOR>병역특례<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='20'><font color=$SETPYO_CHARCOLOR>프리랜서<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='21'><font color=$SETPYO_CHARCOLOR>자원봉사<br></td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='22'><font color=$SETPYO_CHARCOLOR>장애인</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='23'><font color=$SETPYO_CHARCOLOR>고령인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='24'><font color=$SETPYO_CHARCOLOR>노무직<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+</table></div>
+
+<p>&nbsp;</td>
+<td width='234' valign='top' bgcolor='white'>
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+<tr>
+<td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' valign='top'><p><font color='green'><b>[사무관리직]</b></font></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='25'><font color=$SETPYO_CHARCOLOR>경리/회계/재무<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='26'><font color=$SETPYO_CHARCOLOR>마케팅/영업(국내)</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='27'><font color=$SETPYO_CHARCOLOR>무역/영업(해외)&nbsp;<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='28'><font color=$SETPYO_CHARCOLOR>사무직(기획/총무/인사/자재/비서)<br></td></tr>
+<tr><td width='236' height='14' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' valign='top'><p><font color='green'><b>[전문직]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='29'><font color=$SETPYO_CHARCOLOR>법률/특허<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='30'><font color=$SETPYO_CHARCOLOR>증권</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='31'><font color=$SETPYO_CHARCOLOR>번역/통역<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='32'><font color=$SETPYO_CHARCOLOR>세무/회계<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='33'><font color=$SETPYO_CHARCOLOR>공인중개사/부동산<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='34'><font color=$SETPYO_CHARCOLOR>통계/수리<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='35'><font color=$SETPYO_CHARCOLOR>감정평가<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='36'><font color=$SETPYO_CHARCOLOR>경매관리<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='37'><font color=$SETPYO_CHARCOLOR>경영지도/경영분석</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='38'><font color=$SETPYO_CHARCOLOR>인테리어/실내디자인<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='39'><font color=$SETPYO_CHARCOLOR>의상/패션디자인/코디네이터<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='40'><font color=$SETPYO_CHARCOLOR>이벤트/레크레이션<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='41'><font color=$SETPYO_CHARCOLOR>비디오촬영/카메라<br></td></tr>
+<tr><td width='236' valign='top'><p><input type='checkbox' name='work_class[]' value='42'><font color=$SETPYO_CHARCOLOR>미용</td></tr>
+<tr><td width='236' valign='top'><p><input type='checkbox' name='work_class[]' value='43'><font color=$SETPYO_CHARCOLOR>서적/소설/시/만화/작가<br></td></tr>
+<tr><td width='236' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><font color='green'><b>[기술/기능/생산직]<br></b></font></td></tr>
+<tr><td width='236' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='44'><font color=$SETPYO_CHARCOLOR>생산관리/생산직/기능직<br></td></tr>
+<tr><td width='236' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='45'><font color=$SETPYO_CHARCOLOR>기술/연구개발<br></td></tr>
+</table></div>
+</td>
+
+<td width='306' valign='top' bgcolor='white'>
+<div align='left'>
+<table border='0' cellpadding='0' cellspacing='0' width='250' height='20' bgcolor='white' bordercolor='white'>
+<tr><td width='255' valign='top'><p><br></td></tr>
+<tr><td width='255' valign='top'><p><font color='green'><b>[컴퓨터/웹/네트워크]</b></font></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' valign='top'><p><input type='checkbox' name='work_class[]' value='46'><font color=$SETPYO_CHARCOLOR>웹마스터/네트워크/서버구축관리</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='47'><font color=$SETPYO_CHARCOLOR>웹프로그램/컨텐츠/개발<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='48'><font color=$SETPYO_CHARCOLOR>웹디자인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='49'><font color=$SETPYO_CHARCOLOR>데이타베이스<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='50'><font color=$SETPYO_CHARCOLOR>웹마케팅/영업/정보제공/기획&nbsp;<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='51'><font color=$SETPYO_CHARCOLOR>몰마스터/쇼핑자키/샵바인더/정보검색<br></td></tr>
+<tr><td width='255' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><font color='green'><b>[정보통신/전산]<br></b></font></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='52'><font color=$SETPYO_CHARCOLOR>전산/프로그래머</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='53'><font color=$SETPYO_CHARCOLOR>통신기술/기술영업<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='54'><font color=$SETPYO_CHARCOLOR>시스템분석/하드웨어/설계<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><font color='green'><b>[컴퓨터디자인]</b></font><font color='green'><br></font></td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='55'><font color=$SETPYO_CHARCOLOR>편집디자인/MAC편집<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='56'><font color=$SETPYO_CHARCOLOR>제품/산업디자인<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='57'><font color=$SETPYO_CHARCOLOR>CAD/CAM<br></td></tr>
+<tr><td width='255' height='15' valign='top'><p><input type='checkbox' name='work_class[]' value='58'><font color=$SETPYO_CHARCOLOR>캐릭터/에니메이션/그래픽디자인</td></tr>
+<tr><td width='255' height='15' valign='top'><p>&nbsp;</td></tr>
+</table></div></td>
+</tr>
+
+<tr>
+<td width='800' valign='top' colspan='3' bgcolor='white'><p><br> <br> <font color='green'><b>[근무희망지역선택] </b></font>
+<font color=$SETPYO_CHARCOLOR>☜근무희망지역은 4개까지 선택이 가능합니다. 구직자가 구인회사를 특정근무지역으로을 검색할때<br>
+그 지역이 아래에서 체크된 지역들에 포함된다면  귀사의 구인정보가 검색되도록 하는데 이용됩니다.. 
+
+<div align='center'>
+<table border='0' cellpadding='0' cellspacing='1' width=750  bgcolor=$setcolor_outline>
+<tr>
+
+<td width='733' bgcolor='white'><p><font color=$SETPYO_CHARCOLOR>
+<input type='checkbox' name='work_area[]' value='0'>서울 &nbsp;
+<input type='checkbox' name='work_area[]' value='1'>경기 &nbsp;
+<input type='checkbox' name='work_area[]' value='2'>인천 &nbsp;
+<input type='checkbox' name='work_area[]' value='3'>강원 
+<input type='checkbox' name='work_area[]' value='4'>대전 &nbsp;
+<input type='checkbox' name='work_area[]' value='5'>충남 &nbsp;
+<input type='checkbox' name='work_area[]' value='6'>충북 &nbsp;
+<input type='checkbox' name='work_area[]' value='7'>전북 &nbsp;
+<input type='checkbox' name='work_area[]' value='8'>전남 &nbsp;
+<input type='checkbox' name='work_area[]' value='9'>광주 &nbsp;
+<input type='checkbox' name='work_area[]' value='10'>경북 &nbsp;
+<input type='checkbox' name='work_area[]' value='11'>경남 
+</td></tr>
+
+<tr>
+<td width='733' bgcolor='white'><p><font color=$SETPYO_CHARCOLOR>
+<input type='checkbox' name='work_area[]' value='12'>대구 &nbsp;
+<input type='checkbox' name='work_area[]' value='13'>울산 &nbsp;
+<input type='checkbox' name='work_area[]' value='14'>부산 &nbsp;
+<input type='checkbox' name='work_area[]' value='15'>제주 
+<input type='checkbox' name='work_area[]' value='16'>아시아 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox' name='work_area[]' value='17'>아프리카 &nbsp;
+<input type='checkbox' name='work_area[]' value='18'>중남미 &nbsp;
+<input type='checkbox' name='work_area[]' value='19'>오세아니아 &nbsp;&nbsp;
+<input type='checkbox' name='work_area[]' value='20'>유럽 &nbsp;
+<input type='checkbox' name='work_area[]' value='21'>북미&nbsp;
+</td>
+</tr>
+</table></div>
+<input type=hidden name=tcode value=$tcode>
+<p align='center'><input type='submit' value='구인등록완료'> 
+<br>
+<br></td>
+</tr>
+</table></div>
+</form>
+$setinfo_tail
+</body>
+</html> 
+");
+?>

@@ -1,0 +1,72 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+include("inc_initarray.phtml"); //login_window_form.phtml (구인회원이 채용제의를 할때 로그인을 하지 않았으면 회원정보입력을 받는회면)
+include("html_style.phtml");
+include($MAINMENU);
+
+echo("
+<HTML>
+<HEAD>
+<title>회원로그인</title>
+<script>
+<!--
+function login_gugic_submit() {
+//------------------------------
+document.login.part.value = 'gugic';
+if(document.login.id.value == '')document.login.id.focus();
+if(document.login.id.value && document.login.password.value == '')document.login.password.focus();
+if(document.login.id.value && document.login.password.value)document.login.submit();
+}
+function login_start_focus(){
+document.login.id.focus();
+}
+//-->
+</script>
+</HEAD>
+
+<BODY onLoad='login_start_focus()'>
+<FORM  name=login METHOD=post ACTION=$sfile[login_check_window]>
+<br><br><br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=400 bgcolor=$setcolor_outline>
+<CENTER>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=600 height=125>
+<FONT color=$SETPYO_CHARCOLOR>아이디</font><INPUT type=text name=id size=10 class='colorbox'>
+<FONT color=$SETPYO_CHARCOLOR>암호</font><INPUT type=password name=password size=10 class='colorbox'>
+<INPUT type=hidden name=work value='LOGIN'>
+
+<INPUT type=hidden name=sfile2	value=$sfile2>
+<INPUT type=hidden name=tcode	value=$tcode>
+<INPUT type=hidden name=seq	value=$seq>
+
+<INPUT type=hidden name=part>
+<INPUT type=button value=구직회원로그인 onClick='login_gugic_submit()'>
+</td>
+</tr>
+</table>
+</div>
+
+<br><br>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=400 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$SETPYO_BACKCOLOR width=600 height=25>
+<a href=$sfile[admin_memrule]?mode=$sfile[mreg_hunt]><font color=$SETPYO_CHARCOLOR>구직회원가입</font></a>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+</div>
+</FORM>
+</CENTER>
+$setinfo_tail
+</BODY>
+</HTML>
+");
+?>

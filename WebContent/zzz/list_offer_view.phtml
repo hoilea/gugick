@@ -1,0 +1,243 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+//list_offer_view.phtml(구인리스트에서 제목클릭시 내용보이기)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$TC=Db_Connect($dfile[guin_list],$dbuser,$dbpass,$HOST);
+
+//hit업테이트
+$QUEUPDATE="UPDATE $table_offer[$tcode] SET hit=hit+1 WHERE seq=$seq";
+$RESULT=mysql_query($QUEUPDATE) or die(mysql_error($table_connect));
+
+$QUE="SELECT  *	FROM $table_offer[$tcode] WHERE seq=$seq";
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+$da_guin = mysql_fetch_array($RESULT);   //구직리스트의 내용읽기
+
+//모집요강
+//----------------------------------------------------------
+$da_guin[content]=nl2br($da_guin[content]); //\n을 -> <br>로
+$da_guin[content]=eregi_replace(" ","&nbsp;",$da_guin[content]); //space를 -> &nbsp;로
+//---------------------------------------------------------
+
+
+//#15# => '제주' 형태로 만들기
+//--------------------------------------------------------------------------
+$dstr_area=explode("#",$da_guin[work_area]);
+for($i=1;$i<count($dstr_area)-1;$i++){
+													$check_num=$dstr_area[$i];
+													$AREA_STR=$AREA_STR.$STR_work_area[$check_num]."/";
+													}
+$AREA_STR=substr($AREA_STR,0,-1); // 마지막 '/'제거
+//-------------------------------------------------------------------------
+
+
+$TC=Db_Connect($dfile[guin_mem],$dbuser,$dbpass,$HOST);
+
+$QUE="
+SELECT  company 
+FROM $table_mem[offer] 
+WHERE id='$da_guin[id_fk_offermem]'
+";
+
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$da_mem = mysql_fetch_array($RESULT);   //구직리스트에서 아이디를 찾아 회원정보 읽기
+
+//inc_initarray.phtml에의 설정배열에 입력될 변수(NUM)만들기
+//------------------------
+$NUM_sex=$da_guin[sex];
+$NUM_work_kind=$da_guin[work_kind];
+$NUM_salary_year=$da_guin[salary_year];
+$NUM_educational_last=$da_guin[educational_last];
+$NUM_experience_year=$da_guin[experience_year];
+$NUM_experience_year_radio=$da_guin[experience_year];
+$NUM_experience_for=$da_guin[experience_for];
+$EXPERIENCE_FORSTR=($NUM_experience_year_radio==2) ? $STR_experience_year_offer[$NUM_experience_for] : ''; //경력자를 구한다면 경력년수출력
+
+$NUM_salary_year=$NUM_salary_year+1;
+$SALARYMSTR=($da_guin[salary_monthly]) ? "월 $da_guin[salary_monthly] 만원" : $STR_salary_year[$NUM_salary_year];
+//------------------------
+
+//구직회원이 로그인을 하지 않았으면 입사희망메세지기능을 사용하지 못한다!
+$LOGIN_STR=($USER_COOKIE_HUNT)
+?"<a href=\"javascript:window_hope('$sfile[tmp_hunt]?tcode=$tcode&seq=$seq&p=$da_guin[id_fk_offermem]&toemail=$da_guin[email]')\"><font color=$SETPYO_CHARCOLOR><u>/입사희망</u></font></a>"
+:"<a href=$sfile[login_form_gugic]?sfile2=$sfile[list_offer_view]&tcode=$tcode&seq=$seq&loginoption=sublogin><font color=$SETPYO_CHARCOLOR><u>/입사희망</u></font></a>";
+
+$WINDOWWIDTH=$SET_WIDTH_OFFER_VIEW_CO+50;		//회사상세정보윈도우창
+
+
+
+//체크기능/레벨아이콘---------------------------------------------
+if($jsadmincookieval=="$ADMINID$ADMINPASSWORD"){
+																				$MEMOSTR="레벨";
+																				$WINDOWSTR="window_level";
+																				$MEMOTITLESTR="<font color=green><u>/레벨</u></font>";																																																				
+																				
+																				$ONLOADSTR="onLoad='start_focus()'";	//관리자 모드일때만 코드값입력폼이 있을때만 스타트포커스
+																				$ONLOADSCRIPT="function start_focus(){document.code.searchcode.focus();}";
+																				$NOSIE="";	//html소스보기를 대비한 잡음문자
+																			}else{
+																				$MEMOSTR="체크";	
+																				$WINDOWSTR="window_memo";
+																				$MEMOTITLESTR="<font color=$SETPYO_CHARCOLOR><u>/체크</u></font>";
+																				$DISABLE1="<!--";
+																				$DISABLE2="//-->";
+
+																				$ONLOADSTR="";
+																				$ONLOADSCRIPT="";
+																				$NOSIE="run_program_ok_update_";	//html소스보기를 대비한 잡음문자
+																			}
+$HERFMEMOSTR=(!$HTTP_COOKIE_VARS[USER_COOKIE_HUNT] && !$HTTP_COOKIE_VARS[USER_COOKIE_OFFER] && $jsadmincookieval != "$ADMINID$ADMINPASSWORD") 
+? "$MEMOTITLESTR"
+: "<a href=\"javascript:$WINDOWSTR('db=guin_list&tcode=$tcode&seq=$seq')\">$MEMOTITLESTR</a>";
+//--------------------------------------------------------------
+
+//학력제한여부결정
+$STREDUCATION_LAST=(!$NUM_educational_last)?"학력무관":"$STR_educational_last[$NUM_educational_last] 이상";
+
+echo("
+<HTML>
+<HEAD>
+<SCRIPT language='JavaScript'>
+<!--
+function window_memo(str){ //메모
+url= '$sfile[memo_list]?'+str;
+window.open(url,'new_win','width=500,height=300,scrollbars=yes,resizable=no');
+}
+
+function window_level(str){ //레벨조정
+url= '$sfile[admin_level_view_offer]?'+str;
+window.open(url,'new_win','width=300,height=220,scrollbars=yes,resizable=no');
+}
+
+function window_hope(str){ //입사희망메세지작성폼
+open(str,'new_win','width=650,height=470,scrollbars=yes,resizable=yes');
+}
+
+function window_company(str){ //회사정보
+open(str,'new_win','width=$WINDOWWIDTH,height=450,scrollbars=yes,resizable=yes');
+}
+
+$ONLOADSCRIPT
+//-->
+</SCRIPT>
+</HEAD>
+<BODY $ONLOADSTR>
+<title>구직등록자정보</title>
+<p align=center><font color=$SETPYO_CHARCOLOR>$da_guin[title]</font>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_HUNT_VIEW bgcolor=$setcolor_outline>
+<tr><td bgcolor=$SETPYO_BACKCOLOR width='$SET_WIDTH_HUNT_VIEW'>$sethtml_banner</td></tr>
+</TABLE>
+</DIV>
+<br><br>
+
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=800 bgcolor=$setcolor_outline>
+<tr>
+<td bgcolor=$setcolor_ctitle width='60'><p align='center'><font color=$SETPYO_CHARCOLOR>&nbsp;<b>회사명</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR width='340'><p align='left'><font color=$SETPYO_CHARCOLOR>$da_mem[company]</font></td>
+<td bgcolor=$setcolor_ctitle  width='60' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>지급연봉</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR  width='340' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$SALARYMSTR</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>담당자</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[name]</a></font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>경력제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_experience_year_radio[$NUM_experience_year_radio] $EXPERIENCE_FORSTR</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>메일</font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><a href=mailto:$da_guin[email]><font color=$SETPYO_CHARCOLOR><u>$da_guin[email]</u></a></font></td>
+<td bgcolor=$setcolor_ctitle   height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>성별제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR  height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_sex[$NUM_sex]</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>전화</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[tel]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>나이제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$da_guin[age_limit] 이후 출생자</font></td>
+</tr>
+<tr>
+<td bgcolor=$setcolor_ctitle 	valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무지역</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$AREA_STR</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>학력제한</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STREDUCATION_LAST</font></td>
+</tr>
+
+<tr>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'><p align='center'><font color=$SETPYO_CHARCOLOR><b>근무형태</b></font></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'><p><font color=$SETPYO_CHARCOLOR>$STR_work_kind[$NUM_work_kind]</font></td>
+<td bgcolor=$setcolor_ctitle height='17' valign='bottom'></td>
+<td bgcolor=$SETPYO_BACKCOLOR height='17' valign='bottom'></td>
+</tr>
+</TABLE></DIV>
+<br><br>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW bgcolor=white>
+<tr>
+<td height='17' valign='bottom'><p align='right'>
+
+$DISABLE1
+<FORM name=code  METHOD=POST ACTION=$sfile[admin_searchcode]>
+<a href=$NOSIE$sfile[list_offer_admin_root]?db=guin_mem&grv=$da_guin[id_fk_offermem]><font color=gray><u>/회원등록글관리</u></font></a>
+<font color=gray>(등록코드로 해당등록글찾기)</font>
+<input type=text size=20 name=searchcode>
+<input type=submit value='찾기'>
+</FORM>
+$DISABLE2
+
+<a href=\"javascript:history.back()\"><font color=$SETPYO_CHARCOLOR><u>/목록으로</u></font></a>&nbsp;$HERFMEMOSTR
+<a href=\"javascript:window_company('$sfile[list_offer_view_co]?tcode=$tcode&seq=$seq')\"><font color=$SETPYO_CHARCOLOR><u>/회사정보</u></font></a>&nbsp;
+$LOGIN_STR
+</td>
+</tr>
+</TABLE>
+</DIV>
+
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_VIEW bgcolor=$setcolor_outline>　　　　
+<tr>
+<td bgcolor=white width=$SET_WIDTH_OFFER_VIEW valign='bottom'><p><font color=$SETPYO_CHARCOLOR>
+<br>
+$da_guin[content]
+<br>
+</font>
+</tr>
+</TABLE></DIV>
+$setinfo_tail
+</BODY>
+</HTML>
+")
+?>

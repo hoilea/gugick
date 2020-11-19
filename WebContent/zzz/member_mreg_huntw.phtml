@@ -1,0 +1,143 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//member_mreg_huntw.phtml 구직회원관리에서사용되는회원정보수정->저장스크립트
+//
+include("inc_initarray.phtml");
+
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+//근무희망업종 및 희망지역 문자열 만들기 #1#2#3#----------------------------------------------------
+
+if(count($work_class) > 5)Err_Msg("희망업종은 5개까지 선택가능합니다.");
+if(count($work_class) < 1)Err_Msg("희망업종은 하나이상 선택해야 합니다.");
+
+if(count($work_area) > 4)Err_Msg("근무희망지역은 5개까지 선택가능합니다.");
+if(count($work_area) < 1)Err_Msg("근무희망지역은 하나이상 선택해야 합니다.");
+
+for($i=0;$i<count($work_class);$i++){
+													$class_str=$class_str."#".$work_class[$i];
+													}
+													$work_class=$class_str."#";
+														
+for($i=0;$i<count($work_area);$i++){
+													$area_str=$area_str."#".$work_area[$i];
+													}
+													$work_area=$area_str."#";
+
+								
+//---------------------------------------------------------------------------
+if($photo_name){  //사진화일이 넘오올때만											
+						
+						//if(!is_dir($PHOTODIR)){mkdir($PHOTODIR,0777);chmod($PHOTODIR,0777);}사진화일이 저장될 디렉토리가 없으면 화일저장 디렉토리 생성
+						
+						if(!strstr($photo_name,".gif") && !strstr($photo_name,".jpg") && !strstr($photo_name,".GIF") && !strstr($photo_name,".JPG"))Err_Msg("$photo_name(X) 사진화일은 GIF,JPG 화일만 사용할 수 있습니다..");
+						$target_dir=$PHOTODIR.$idnum2.$photo_name;									
+						if(file_exists($target_dir))Err_Msg("이미 같은이름($photo_name)의 사진화일이 있습니다..다른 이름으로 바꾸어서 올려주십시오!");
+
+						if($photofilename){ //기존에 사진화일이 있는데 사진화일을 다시 올린다면 기존화일 삭제.
+													if(file_exists($PHOTODIR.$photofilename))unlink($PHOTODIR.$photofilename);
+													}
+						
+						copy($photo,$target_dir);
+						$photo=$idnum2.$photo_name;
+						$PHOTOQUESTR=",photo='$photo'";		//기존화일이 수정될때만 사진화일업데이트
+						}else{$photo='';	$PHOTOQUESTR='';}
+
+//------------------------------------------------------------------------
+$TC=Db_Connect($dfile[gugic_mem],$dbuser,$dbpass,$HOST);
+
+//수정모드이면수정작업 아니면 저장작업
+$QUE=($edit_mode) ? "
+UPDATE $table_mem[hunt] 
+SET password='$password',
+name='$name', 
+sex='$sex', 
+email='$email', 
+tel='$tel',
+tel_public_yesno='$tel_public_yesno',
+juso_public_yesno='$juso_public_yesno', 
+homepage='$homepage', 
+idnum1='$idnum1', 
+idnum2='$idnum2',
+birth_yyyy='$birth_yyyy', 
+birth_mm='$birth_mm', 
+birth_dd='$birth_dd', 
+juso_num='$juso_num', 
+juso='$juso', 
+work_class='$work_class', 
+work_area='$work_area',
+work_kind='$work_kind', 
+salary_year='$salary_year', 
+salary_monthly='$salary_monthly',
+experience_year='$experience_year', 
+experience_detail='$experience_detail', 
+educational_last='$educational_last', 
+educational_detail='$educational_detail',
+license='$license', 
+spacial='$spacial', 
+content='$introduce'
+$PHOTOQUESTR
+WHERE id = '$pid'
+"
+
+:"
+INSERT INTO $table_mem[hunt] 
+VALUES(
+'$id',
+'$password',
+'$name',
+'$sex',
+'$email',
+'$tel',
+'$tel_public_yesno',
+'$juso_public_yesno',
+'$homepage',
+'$idnum1',
+'$idnum2',
+'$birth_yyyy',
+'$birth_mm',
+'$birth_dd',
+'$juso_num',
+'$juso',
+'$work_class',
+'$work_area',
+'$work_kind',
+'$salary_year',
+'$salary_monthly',
+'$experience_year',
+'$experience_detail',
+'$educational_last',
+'$educational_detail',
+'$license',
+'$spacial',
+'$introduce',
+'$photo',
+'')";
+
+//echo $QUE; exit;
+$RESULT=mysql_query($QUE) or die(mysql_error($TC));
+echo "<META http-equiv='refresh' content='0;url=$sfile[index]'>";
+?>

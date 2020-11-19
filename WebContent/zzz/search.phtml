@@ -1,0 +1,122 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//search.phtml(제목검색/자격증검색)
+include("inc_initarray.phtml");
+include("html_style.phtml");
+include($MAINMENU);
+
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//---------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+//---------------------------------------------------------------------------
+function Num_Str($delimiter,$str){
+			$num=count(explode($delimiter,$str))-1;
+			return $num;
+			}
+//---------------------------------------------------------------------------
+
+$TC=Db_Connect($dfile[$searchdb],$dbuser,$dbpass,$HOST);
+
+$SEARCHMODE=($searchdb=="gugic_list") ? "search_list_hunt" : "search_list_offer";									//검색된리스트목록을 보여줄때 구직-구인결정	
+
+
+//============================================================================
+for($i=0;$i<count($table_hunt);$i++){ //--------테이블수만큼 루프반복
+
+$QUE=($searchdb=="gugic_list") ? "SELECT seq FROM $table_hunt[$i] WHERE title LIKE '%$searchstr%'"	//구직일경우와 구인일경우 다르게..
+											   : "SELECT seq FROM $table_offer[$i] WHERE title LIKE '%$searchstr%'";
+//----------------------------------------------------------------------------------
+$RESULT=mysql_query($QUE) or die(mysql_error($table_connect));
+$total=mysql_num_rows($RESULT);    //전체행수
+
+if($total){
+//-----------------------
+for($j=0;$j<$total;$j++){						//각 테이블의 $seq정보를 문자열 조합시킨다.
+mysql_data_seek($RESULT,$j);
+$seq = mysql_result($RESULT,$j,0);		//결과(seq)를 구한다.
+$SEQSTR=$SEQSTR.$seq."#";				//	1#2#
+}//inner~for
+//----------------------
+$SEQSTR=substr($SEQSTR,0,-1);			// 1#2# -> 1#2 
+$TABLESQRSTR=$SEQSTR.":".$i;			// 1#2:0
+$TABLESQRSTRALL=$TABLESQRSTRALL.$TABLESQRSTR."-";		//1#2:0|
+$SEQSTR="";	//한테이블의 작업을 마치면 초기화
+//----------------------
+}//if
+}//out~for
+$TABLESQRSTRALL=substr($TABLESQRSTRALL,0,-1);					//1#2:0| -> 1#2:0  마지막 |제거
+//=========================================================================
+//echo $TABLESQRSTRALL; 
+echo "
+<html>
+<head>
+<title> 제목검색결과</title>
+<meta http-equiv='content-type' content='text/html; charset=euc-kr'>
+<SCRIPT language='JavaScript'>
+
+function view_submit(tcode_hidden) {
+//-------------------------------
+document.list.tcode.value = tcode_hidden;
+document.list.char.value = '$searchstr';
+document.list.submit();
+}
+</SCRIPT>
+</head>
+<body>
+<form name='list' method='post' action=$sfile[$SEARCHMODE]>
+<div align=$setpos>
+<table border='0' cellpadding='0' cellspacing='1' width=$SET_WIDTH_OFFER_LIST bgcolor=$setcolor_outline>
+";
+
+$divide=explode("-",$TABLESQRSTRALL);
+$divide_num=(trim($TABLESQRSTRALL)=='') ? 0 : count($divide);
+
+
+if(!$divide_num)Err_Msg("검색어 $searchstr 에 해당되는 자료가 없습니다!");
+
+for($i=0;$i<$divide_num;$i++){
+													$delimiter=explode(":",$divide[$i]);	//  1#2:0   -> $delimiter[0]=1#2  $delimiter[1]=0																							
+													$N=Num_Str("#",$delimiter[0])+1;		//  각테이블별 row갯수추출
+													$TNUM=$delimiter[1];
+													echo "
+													<tr>
+													<td bgcolor=$SETPYO_BACKCOLOR width=$SET_WIDTH_OFFER_LIST height='20'><p align='left'>
+													<font color=$SETOUTLINE_COLOR><a href='javascript:view_submit($TNUM)'><font color=$SETPYO_CHARCOLOR>$table_title[$TNUM](</font><font color=green>$N</font><font color=$SETPYO_CHARCOLOR>)</font></a>&nbsp;<br>
+													<input type=hidden name=rowstr[$TNUM] value=$delimiter[0]></font>
+													</td>
+													</tr>
+													";																		
+											
+											
+											}
+echo "
+<input type=hidden name=tcode>
+<input type=hidden name=char>
+</form>
+</table>
+</div>
+$setinfo_tail
+</body>
+</html>
+"; 
+?>

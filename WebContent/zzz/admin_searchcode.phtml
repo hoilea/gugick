@@ -1,0 +1,66 @@
+<?
+/*
+프로그램명          새봄로(Sb-Road)
+제작                   오경택
+메일		             clock934@naver.com
+이프로그램은 http://www.jobs21.net  에서 제작되었으며 제작자의 협의없이 재판매를 할 수 없다.
+*/
+
+//admin_searchcode.phtml     (등록코드로 해당글찾기)
+include("inc_initarray.phtml");
+if($jsadmincookieval != "$ADMINID$ADMINPASSWORD")die("접근불가! 로그기록완료!");
+//----------------------------------------------------------------------------
+function Db_Connect($dbname,$id,$password,$host="localhost"){
+$mysql_connect = mysql_connect($host,$id,$password) or die(mysql_error($table_connect));
+$table_connect  = mysql_select_db($dbname,$mysql_connect) or die(mysql_error($table_connect));
+return $table_connect;
+}
+//----------------------------------------------------------------------------------------------------
+function Num_Str($delimiter,$str){
+			$num=count(explode($delimiter,$str))-1;
+			return $num;
+			}
+//----------------------------------------------------------------------------------------------------
+function Err_Msg($string){
+echo("
+<script>
+<!--
+history.go(-1);
+alert('$string');
+//-->
+</script>
+");
+exit;
+}
+
+$searchcode=trim($searchcode);	//좌우공백제거
+$sc=explode("a",$searchcode);	//a로 나눔
+//패턴검사
+if(Num_Str("a",$searchcode) != 2)Err_Msg("$searchcode 코드는 잘못된 등록코드입니다. 구인/구직등록글관리에서 다시한번 확인하십시오!");
+if((int)$sc[0] < 1 || (int)$sc[0] >2)Err_Msg("$searchcode 코드는 잘못된 등록코드입니다. 구인/구직등록글관리에서 다시한번 확인하십시오!");
+if((int)$sc[1] < 0 || (int)$sc[1] >58)Err_Msg("$searchcode 코드는 잘못된 등록코드입니다. 구인/구직등록글관리에서 다시한번 확인하십시오!");
+if((int)$sc[2] < 0)Err_Msg("$searchcode 코드는 잘못된 등록코드입니다. 구인/구직등록글관리에서 다시한번 확인하십시오!");
+
+$db=$sc[0];		//DB
+$tcode=$sc[1];	//테이블
+$seq=$sc[2];		//seq
+
+
+if($sc[0]=="1"){ //구직등록글이면
+					$SFILESTR=$sfile[list_hunt_view];
+					$DBSELECT=$dfile[gugic_list];
+					$TABLESELECT=$table_hunt[$tcode];
+					}elseif($sc[0]=="2"){
+					$SFILESTR=$sfile[list_offer_view];
+					$DBSELECT=$dfile[guin_list];
+					$TABLESELECT=$table_offer[$tcode];
+					}
+
+//실제등록글이 있는지 검사
+$TC=Db_Connect($DBSELECT,$dbuser,$dbpass,$HOST);
+$QUE="SELECT count(*) FROM $TABLESELECT WHERE seq=$seq";
+$RESULT=mysql_query($QUE) or Err_Msg("$searchcode 코드는 잘못된 등록코드입니다. 구인/구직등록글관리에서 다시한번 확인하십시오!");
+$total=mysql_result($RESULT,0,0);
+if(!$total)Err_Msg("$searchcode 등록코드에 해당하는 자료가 없습니다!");
+echo "<META http-equiv='refresh' content='0;url=$SFILESTR?seq=$seq&tcode=$tcode'>";
+?>
